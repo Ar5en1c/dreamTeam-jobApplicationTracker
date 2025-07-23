@@ -3,9 +3,10 @@ import { beforeEach, afterEach, vi } from 'vitest';
 
 // Make vitest globals available
 declare global {
-  var beforeEach: typeof beforeEach;
-  var afterEach: typeof afterEach;
-  var vi: typeof vi;
+  // Remove type annotations to avoid circular reference errors
+  var beforeEach;
+  var afterEach;
+  var vi;
 }
 
 globalThis.beforeEach = beforeEach;

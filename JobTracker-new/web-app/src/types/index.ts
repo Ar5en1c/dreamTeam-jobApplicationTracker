@@ -94,7 +94,7 @@ export interface Job {
   location: string;
   description: string;
   requirements: string[];
-  salary?: string;
+  salary: string;
   url: string;
   portal: JobPortal;
   benefits?: string[];

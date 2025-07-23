@@ -42,7 +42,6 @@ const itemVariants = {
 };
 
 export const Profile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);

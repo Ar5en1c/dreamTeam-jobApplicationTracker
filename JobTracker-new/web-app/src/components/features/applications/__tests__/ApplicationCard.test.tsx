@@ -167,7 +167,7 @@ describe('ApplicationCard', () => {
       },
       tags: undefined,
       aiInsights: undefined,
-      statusHistory: undefined,
+      statusHistory: [],
     };
     
     render(<ApplicationCard application={minimalApplication} {...mockHandlers} />);

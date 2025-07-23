@@ -210,7 +210,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
             </div>
             <Progress 
               value={getProgressPercentage(application.status)} 
-              variant={application.status === 'rejected' ? 'destructive' : 'default'}
+              variant={application.status === 'rejected' ? 'error' : 'default'}
               className="h-2"
             />
           </div>
