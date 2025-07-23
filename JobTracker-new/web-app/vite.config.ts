@@ -6,7 +6,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? '/JobApplicationTracker/' : '/',
+  base: process.env.NODE_ENV === 'production' ? '/dreamTeam-jobApplicationTracker/' : '/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
