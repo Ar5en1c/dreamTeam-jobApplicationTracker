@@ -95,7 +95,14 @@ describe('Utils', () => {
 
   describe('jobUtils', () => {
     const mockProfile = {
-      personalInfo: { name: 'John Doe', email: 'john@example.com' },
+      userId: 'user-1',
+      personalInfo: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '',
+        location: '',
+        websites: []
+      },
       skills: [
         { id: '1', name: 'React', level: 'advanced' as const, category: 'technical' as const },
         { id: '2', name: 'Node.js', level: 'intermediate' as const, category: 'technical' as const },
@@ -106,7 +113,9 @@ describe('Utils', () => {
           title: 'Developer', 
           company: 'Tech Corp',
           startDate: new Date('2020-01-01'),
-          current: true
+          current: true,
+          description: '',
+          skills: []
         }
       ],
       education: [
@@ -115,9 +124,23 @@ describe('Utils', () => {
           degree: 'Bachelor of Science',
           institution: 'University',
           startDate: new Date('2016-01-01'),
-          endDate: new Date('2020-01-01')
+          endDate: new Date('2020-01-01'),
+          field: '',
+          description: ''
         }
-      ]
+      ],
+      preferences: {
+        jobTypes: [],
+        locations: [],
+        industries: [],
+        roles: [],
+        salaryRange: { min: 0, max: 0, currency: 'USD' },
+        workArrangement: [],
+        companySize: [],
+        benefits: []
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     it('calculates profile completeness', () => {
@@ -149,7 +172,7 @@ describe('Utils', () => {
     });
 
     it('generates skill recommendations', () => {
-      const recommendations = jobUtils.getSkillRecommendations(mockProfile.skills, 'technical');
+      const recommendations = jobUtils.getSkillRecommendations(mockProfile.skills.map(s => s.name), 'technical');
       expect(Array.isArray(recommendations)).toBe(true);
       expect(recommendations.length).toBeGreaterThan(0);
     });

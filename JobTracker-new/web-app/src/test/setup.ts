@@ -1,12 +1,11 @@
-import '@testing-library/jest-dom';
-import { beforeEach, afterEach, vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { beforeEach, afterEach, vi } from "vitest";
 
 // Make vitest globals available
 declare global {
-  // Remove type annotations to avoid circular reference errors
-  var beforeEach;
-  var afterEach;
-  var vi;
+  var beforeEach: typeof import('vitest')['beforeEach'];
+  var afterEach: typeof import('vitest')['afterEach'];
+  var vi: typeof import('vitest')['vi'];
 }
 
 globalThis.beforeEach = beforeEach;

@@ -51,8 +51,13 @@ export interface Skill {
   verified?: boolean;
 }
 
-export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
-export type SkillCategory = 'technical' | 'soft' | 'language' | 'certification' | 'tool';
+export type SkillLevel = "beginner" | "intermediate" | "advanced" | "expert";
+export type SkillCategory =
+  | "technical"
+  | "soft"
+  | "language"
+  | "certification"
+  | "tool";
 
 export interface UserPreferences {
   jobTypes: JobType[];
@@ -69,9 +74,19 @@ export interface UserPreferences {
   benefits: string[];
 }
 
-export type JobType = 'full-time' | 'part-time' | 'contract' | 'freelance' | 'internship';
-export type WorkArrangement = 'remote' | 'hybrid' | 'on-site';
-export type CompanySize = 'startup' | 'small' | 'medium' | 'large' | 'enterprise';
+export type JobType =
+  | "full-time"
+  | "part-time"
+  | "contract"
+  | "freelance"
+  | "internship";
+export type WorkArrangement = "remote" | "hybrid" | "on-site";
+export type CompanySize =
+  | "startup"
+  | "small"
+  | "medium"
+  | "large"
+  | "enterprise";
 
 export interface JobApplication {
   id: string;
@@ -103,34 +118,34 @@ export interface Job {
   industry?: string;
 }
 
-export type JobPortal = 
-  | 'lever' 
-  | 'greenhouse' 
-  | 'workday' 
-  | 'ultipro' 
-  | 'smartrecruiters' 
-  | 'oracle' 
-  | 'jobvite' 
-  | 'ashby' 
-  | 'taleo' 
-  | 'eightfold' 
-  | 'linkedin' 
-  | 'indeed' 
-  | 'glassdoor' 
-  | 'direct'
-  | 'other';
+export type JobPortal =
+  | "lever"
+  | "greenhouse"
+  | "workday"
+  | "ultipro"
+  | "smartrecruiters"
+  | "oracle"
+  | "jobvite"
+  | "ashby"
+  | "taleo"
+  | "eightfold"
+  | "linkedin"
+  | "indeed"
+  | "glassdoor"
+  | "direct"
+  | "other";
 
-export type ApplicationStatus = 
-  | 'draft' 
-  | 'applied' 
-  | 'under_review' 
-  | 'phone_screen' 
-  | 'interview' 
-  | 'final_interview' 
-  | 'offer' 
-  | 'rejected' 
-  | 'withdrawn' 
-  | 'expired';
+export type ApplicationStatus =
+  | "draft"
+  | "applied"
+  | "under_review"
+  | "phone_screen"
+  | "interview"
+  | "final_interview"
+  | "offer"
+  | "rejected"
+  | "withdrawn"
+  | "expired";
 
 export interface StatusHistoryEntry {
   id: string;
@@ -164,7 +179,13 @@ export interface DocumentReference {
   uploadedAt: Date;
 }
 
-export type DocumentType = 'resume' | 'cover_letter' | 'portfolio' | 'certificate' | 'transcript' | 'other';
+export type DocumentType =
+  | "resume"
+  | "cover_letter"
+  | "portfolio"
+  | "certificate"
+  | "transcript"
+  | "other";
 
 export interface AIInsights {
   matchScore: number; // 0-100
@@ -202,13 +223,13 @@ export interface ActivityEntry {
   applicationId?: string;
 }
 
-export type ActivityType = 
-  | 'application_submitted' 
-  | 'status_changed' 
-  | 'interview_scheduled' 
-  | 'response_received' 
-  | 'document_uploaded' 
-  | 'profile_updated';
+export type ActivityType =
+  | "application_submitted"
+  | "status_changed"
+  | "interview_scheduled"
+  | "response_received"
+  | "document_uploaded"
+  | "profile_updated";
 
 // Component Props Types
 export interface ComponentProps {
@@ -220,7 +241,16 @@ export interface ComponentProps {
 export interface FormField {
   id: string;
   name: string;
-  type: 'text' | 'email' | 'tel' | 'url' | 'textarea' | 'select' | 'multiselect' | 'date' | 'number';
+  type:
+    | "text"
+    | "email"
+    | "tel"
+    | "url"
+    | "textarea"
+    | "select"
+    | "multiselect"
+    | "date"
+    | "number";
   label: string;
   placeholder?: string;
   required?: boolean;
@@ -235,7 +265,7 @@ export interface SelectOption {
 }
 
 export interface ValidationRule {
-  type: 'required' | 'email' | 'url' | 'min' | 'max' | 'pattern';
+  type: "required" | "email" | "url" | "min" | "max" | "pattern";
   value?: string | number;
   message: string;
 }
@@ -264,7 +294,7 @@ export type DeepPartial<T> = {
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // Theme and UI Types
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = "light" | "dark" | "system";
 
 export interface ThemeConfig {
   theme: Theme;

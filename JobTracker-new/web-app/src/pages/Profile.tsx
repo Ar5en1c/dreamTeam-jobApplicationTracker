@@ -1,44 +1,44 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  MapPin, 
-  Mail, 
-  Phone, 
-  Globe, 
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  MapPin,
+  Mail,
+  Phone,
+  Globe,
   Calendar,
   Building2,
   GraduationCap,
   Award,
   Edit,
-  Plus
-} from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Avatar } from '@/components/ui/Avatar';
-import { Button } from '@/components/ui/Button';
-import { Progress } from '@/components/ui/Progress';
-import { ProfileEditModal } from '@/components/features/profile/ProfileEditModal';
-import { ExperienceModal } from '@/components/features/profile/ExperienceModal';
-import { SkillsModal } from '@/components/features/profile/SkillsModal';
-import { EducationModal } from '@/components/features/profile/EducationModal';
-import { mockUserProfile } from '@/lib/mockData';
-import type { UserProfile, Experience, Skill, Education } from '@/types';
-import { dateUtils, jobUtils } from '@/lib/utils';
-import { SKILL_CATEGORIES } from '@/lib/constants';
+  Plus,
+} from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { Progress } from "@/components/ui/Progress";
+import { ProfileEditModal } from "@/components/features/profile/ProfileEditModal";
+import { ExperienceModal } from "@/components/features/profile/ExperienceModal";
+import { SkillsModal } from "@/components/features/profile/SkillsModal";
+import { EducationModal } from "@/components/features/profile/EducationModal";
+import { mockUserProfile } from "@/lib/mockData";
+import type { UserProfile, Experience, Skill, Education } from "@/types";
+import { dateUtils, jobUtils } from "@/lib/utils";
+import { SKILL_CATEGORIES } from "@/lib/constants";
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  visible: { opacity: 1, y: 0 },
 };
 
 export const Profile: React.FC = () => {
@@ -46,11 +46,21 @@ export const Profile: React.FC = () => {
   const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<Experience | undefined>(undefined);
-  const [selectedEducation, setSelectedEducation] = useState<Education | undefined>(undefined);
-  const [experienceModalMode, setExperienceModalMode] = useState<'create' | 'edit'>('create');
-  const [educationModalMode, setEducationModalMode] = useState<'create' | 'edit'>('create');
-  const [expandedSkillCategories, setExpandedSkillCategories] = useState<Record<string, boolean>>({});
+  const [selectedExperience, setSelectedExperience] = useState<
+    Experience | undefined
+  >(undefined);
+  const [selectedEducation, setSelectedEducation] = useState<
+    Education | undefined
+  >(undefined);
+  const [experienceModalMode, setExperienceModalMode] = useState<
+    "create" | "edit"
+  >("create");
+  const [educationModalMode, setEducationModalMode] = useState<
+    "create" | "edit"
+  >("create");
+  const [expandedSkillCategories, setExpandedSkillCategories] = useState<
+    Record<string, boolean>
+  >({});
   const [profile, setProfile] = useState<UserProfile>(mockUserProfile);
   const skillsByCategory = jobUtils.getSkillsByCategory(profile.skills);
 
@@ -59,40 +69,40 @@ export const Profile: React.FC = () => {
   };
 
   const handleSaveProfile = (updatedProfile: Partial<UserProfile>) => {
-    setProfile(prev => ({ ...prev, ...updatedProfile }));
-    console.log('Profile updated:', updatedProfile);
+    setProfile((prev) => ({ ...prev, ...updatedProfile }));
+    console.log("Profile updated:", updatedProfile);
   };
 
   const handleAddExperience = () => {
     setSelectedExperience(undefined);
-    setExperienceModalMode('create');
+    setExperienceModalMode("create");
     setIsExperienceModalOpen(true);
   };
 
   const handleEditExperience = (experience: Experience) => {
     setSelectedExperience(experience);
-    setExperienceModalMode('edit');
+    setExperienceModalMode("edit");
     setIsExperienceModalOpen(true);
   };
 
-  const handleSaveExperience = (experienceData: Omit<Experience, 'id'>) => {
-    if (experienceModalMode === 'create') {
+  const handleSaveExperience = (experienceData: Omit<Experience, "id">) => {
+    if (experienceModalMode === "create") {
       const newExperience: Experience = {
         ...experienceData,
-        id: `exp-${Date.now()}`
+        id: `exp-${Date.now()}`,
       };
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        experience: [newExperience, ...prev.experience]
+        experience: [newExperience, ...prev.experience],
       }));
     } else if (selectedExperience) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        experience: prev.experience.map(exp =>
+        experience: prev.experience.map((exp) =>
           exp.id === selectedExperience.id
             ? { ...experienceData, id: selectedExperience.id }
             : exp
-        )
+        ),
       }));
     }
     setIsExperienceModalOpen(false);
@@ -103,43 +113,43 @@ export const Profile: React.FC = () => {
   };
 
   const handleSaveSkills = (skills: Skill[]) => {
-    setProfile(prev => ({
+    setProfile((prev) => ({
       ...prev,
-      skills
+      skills,
     }));
     setIsSkillsModalOpen(false);
   };
 
   const handleAddEducation = () => {
     setSelectedEducation(undefined);
-    setEducationModalMode('create');
+    setEducationModalMode("create");
     setIsEducationModalOpen(true);
   };
 
   const handleEditEducation = (education: Education) => {
     setSelectedEducation(education);
-    setEducationModalMode('edit');
+    setEducationModalMode("edit");
     setIsEducationModalOpen(true);
   };
 
-  const handleSaveEducation = (educationData: Omit<Education, 'id'>) => {
-    if (educationModalMode === 'create') {
+  const handleSaveEducation = (educationData: Omit<Education, "id">) => {
+    if (educationModalMode === "create") {
       const newEducation: Education = {
         ...educationData,
-        id: `edu-${Date.now()}`
+        id: `edu-${Date.now()}`,
       };
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        education: [newEducation, ...prev.education]
+        education: [newEducation, ...prev.education],
       }));
     } else if (selectedEducation) {
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        education: prev.education.map(edu =>
+        education: prev.education.map((edu) =>
           edu.id === selectedEducation.id
             ? { ...educationData, id: selectedEducation.id }
             : edu
-        )
+        ),
       }));
     }
     setIsEducationModalOpen(false);
@@ -171,11 +181,12 @@ export const Profile: React.FC = () => {
                       {profile.personalInfo.name}
                     </h1>
                     <p className="text-lg text-muted-foreground mb-4">
-                      {profile.experience[0]?.title} at {profile.experience[0]?.company}
+                      {profile.experience[0]?.title} at{" "}
+                      {profile.experience[0]?.company}
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="self-start"
                     onClick={handleEditProfile}
                   >
@@ -183,7 +194,7 @@ export const Profile: React.FC = () => {
                     Edit Profile
                   </Button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center text-muted-foreground">
                     <Mail className="w-4 h-4 mr-2" />
@@ -201,17 +212,19 @@ export const Profile: React.FC = () => {
                     <Globe className="w-4 h-4 mr-2" />
                     {profile.personalInfo.websites.length > 0 ? (
                       <div className="flex flex-col space-y-1">
-                        {profile.personalInfo.websites.slice(0, 2).map((website, index) => (
-                          <a 
-                            key={index}
-                            href={website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-sm truncate"
-                          >
-                            {website}
-                          </a>
-                        ))}
+                        {profile.personalInfo.websites
+                          .slice(0, 2)
+                          .map((website, index) => (
+                            <a
+                              key={index}
+                              href={website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-sm truncate"
+                            >
+                              {website}
+                            </a>
+                          ))}
                         {profile.personalInfo.websites.length > 2 && (
                           <span className="text-xs text-muted-foreground">
                             +{profile.personalInfo.websites.length - 2} more
@@ -219,7 +232,9 @@ export const Profile: React.FC = () => {
                         )}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">No websites added</span>
+                      <span className="text-muted-foreground">
+                        No websites added
+                      </span>
                     )}
                   </div>
                 </div>
@@ -239,11 +254,7 @@ export const Profile: React.FC = () => {
                   <Building2 className="w-5 h-5 mr-2" />
                   Experience
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleAddExperience}
-                >
+                <Button variant="ghost" size="sm" onClick={handleAddExperience}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add
                 </Button>
@@ -264,15 +275,21 @@ export const Profile: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="text-lg font-semibold text-foreground">{exp.title}</h3>
-                          <p className="text-sm text-muted-foreground">{exp.company}</p>
+                          <h3 className="text-lg font-semibold text-foreground">
+                            {exp.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {exp.company}
+                          </p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline">
-                            {exp.current ? 'Current' : dateUtils.format(exp.endDate!, 'MMM yyyy')}
+                            {exp.current
+                              ? "Current"
+                              : dateUtils.format(exp.endDate!, "MMM yyyy")}
                           </Badge>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleEditExperience(exp)}
                             className="h-8 w-8 p-0"
@@ -283,7 +300,10 @@ export const Profile: React.FC = () => {
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground mb-3">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {dateUtils.format(exp.startDate)} - {exp.current ? 'Present' : dateUtils.format(exp.endDate!)}
+                        {dateUtils.format(exp.startDate)} -{" "}
+                        {exp.current
+                          ? "Present"
+                          : dateUtils.format(exp.endDate!)}
                         {exp.location && (
                           <>
                             <span className="mx-2">•</span>
@@ -292,7 +312,9 @@ export const Profile: React.FC = () => {
                           </>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">{exp.description}</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {exp.description}
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {exp.skills.slice(0, 6).map((skill) => (
                           <Badge key={skill} variant="secondary" size="sm">
@@ -322,11 +344,7 @@ export const Profile: React.FC = () => {
                   <Award className="w-5 h-5 mr-2" />
                   Skills
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleAddSkill}
-                >
+                <Button variant="ghost" size="sm" onClick={handleAddSkill}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add
                 </Button>
@@ -334,7 +352,9 @@ export const Profile: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {Object.entries(skillsByCategory).map(([category, skills]) => {
-                const categoryInfo = SKILL_CATEGORIES.find(c => c.value === category);
+                const categoryInfo = SKILL_CATEGORIES.find(
+                  (c) => c.value === category
+                );
                 return (
                   <div key={category}>
                     <h4 className="text-sm font-medium text-foreground mb-3 flex items-center">
@@ -342,35 +362,45 @@ export const Profile: React.FC = () => {
                       {categoryInfo?.label}
                     </h4>
                     <div className="space-y-3">
-                      {(expandedSkillCategories[category] ? skills : skills.slice(0, 5)).map((skill) => (
+                      {(expandedSkillCategories[category]
+                        ? skills
+                        : skills.slice(0, 5)
+                      ).map((skill) => (
                         <div key={skill.id}>
                           <div className="flex justify-between text-sm mb-1">
                             <span className="font-medium">{skill.name}</span>
-                            <span className="text-muted-foreground capitalize">{skill.level}</span>
+                            <span className="text-muted-foreground capitalize">
+                              {skill.level}
+                            </span>
                           </div>
-                          <Progress 
+                          <Progress
                             value={
-                              skill.level === 'expert' ? 100 :
-                              skill.level === 'advanced' ? 80 :
-                              skill.level === 'intermediate' ? 60 : 40
+                              skill.level === "expert"
+                                ? 100
+                                : skill.level === "advanced"
+                                ? 80
+                                : skill.level === "intermediate"
+                                ? 60
+                                : 40
                             }
-                            variant={skill.verified ? 'success' : 'default'}
+                            variant={skill.verified ? "success" : "default"}
                             size="sm"
                           />
                         </div>
                       ))}
                       {skills.length > 5 && (
                         <button
-                          onClick={() => setExpandedSkillCategories(prev => ({
-                            ...prev,
-                            [category]: !prev[category]
-                          }))}
+                          onClick={() =>
+                            setExpandedSkillCategories((prev) => ({
+                              ...prev,
+                              [category]: !prev[category],
+                            }))
+                          }
                           className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                         >
-                          {expandedSkillCategories[category] 
-                            ? `Show less skills` 
-                            : `+${skills.length - 5} more skills`
-                          }
+                          {expandedSkillCategories[category]
+                            ? `Show less skills`
+                            : `+${skills.length - 5} more skills`}
                         </button>
                       )}
                     </div>
@@ -391,11 +421,7 @@ export const Profile: React.FC = () => {
                 <GraduationCap className="w-5 h-5 mr-2" />
                 Education
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={handleAddEducation}
-              >
+              <Button variant="ghost" size="sm" onClick={handleAddEducation}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add
               </Button>
@@ -404,18 +430,25 @@ export const Profile: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {profile.education.map((edu) => (
-                <div key={edu.id} className="p-4 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                <div
+                  key={edu.id}
+                  className="p-4 rounded-lg border border-border hover:border-primary/30 transition-colors"
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-foreground">{edu.degree}</h3>
-                      <p className="text-sm text-muted-foreground">{edu.field}</p>
+                      <h3 className="font-semibold text-foreground">
+                        {edu.degree}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {edu.field}
+                      </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       {edu.gpa && (
                         <Badge variant="secondary">GPA: {edu.gpa}</Badge>
                       )}
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEditEducation(edu)}
                         className="h-8 w-8 p-0"
@@ -424,19 +457,33 @@ export const Profile: React.FC = () => {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">{edu.institution}</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">
+                    {edu.institution}
+                  </p>
                   <div className="flex items-center text-xs text-muted-foreground mb-3">
                     <Calendar className="w-3 h-3 mr-1" />
-                    {dateUtils.format(edu.startDate)} - {dateUtils.format(edu.endDate!)}
+                    {dateUtils.format(edu.startDate)} -{" "}
+                    {dateUtils.format(edu.endDate!)}
                   </div>
-                  <p className="text-xs text-muted-foreground">{edu.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {edu.description}
+                  </p>
                   {edu.achievements && edu.achievements.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-xs font-medium text-foreground mb-1">Achievements:</p>
+                      <p className="text-xs font-medium text-foreground mb-1">
+                        Achievements:
+                      </p>
                       <div className="space-y-1">
-                        {edu.achievements.slice(0, 2).map((achievement, index) => (
-                          <p key={index} className="text-xs text-muted-foreground">• {achievement}</p>
-                        ))}
+                        {edu.achievements
+                          .slice(0, 2)
+                          .map((achievement, index) => (
+                            <p
+                              key={index}
+                              className="text-xs text-muted-foreground"
+                            >
+                              • {achievement}
+                            </p>
+                          ))}
                       </div>
                     </div>
                   )}

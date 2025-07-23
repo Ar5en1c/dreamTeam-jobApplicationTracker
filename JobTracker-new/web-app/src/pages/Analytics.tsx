@@ -45,7 +45,7 @@ const generateAnalyticsData = () => {
   const applications = mockJobApplications;
   
   // Monthly application trend
-  const monthlyTrend = [];
+  const monthlyTrend: { month: string; applications: number; interviews: number; offers: number }[] = [];
   const months = ['Oct', 'Nov', 'Dec'];
   months.forEach((month, index) => {
     const count = Math.floor(Math.random() * 8) + 2;
