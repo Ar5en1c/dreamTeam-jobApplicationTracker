@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 
 // Mock data for testing
 export const mockUserProfile = {
@@ -210,7 +211,7 @@ export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0) =>
 };
 
 // Mock API responses
-export const createMockApiResponse = <T>(data: T, success = true) => ({
+export const createMockApiResponse = <T,>(data: T, success = true) => ({
   data,
   success,
   message: success ? 'Success' : 'Error',
