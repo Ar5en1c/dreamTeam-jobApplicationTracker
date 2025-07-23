@@ -10,6 +10,7 @@ import type {
   ApplicationStatus,
   WorkArrangement,
   CompanySize,
+  JobPortal,
 } from "@/types";
 
 interface ApplicationModalProps {
@@ -84,7 +85,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
       requirements: [] as string[],
       salary: "",
       url: "",
-      portal: "direct" as const,
+      portal: "direct",
       benefits: [] as string[],
       companySize: "medium" as CompanySize,
       workArrangement: "remote" as WorkArrangement,
@@ -102,7 +103,13 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
   useEffect(() => {
     if (application && mode === "edit") {
       setFormData({
-        job: { ...application.job },
+        job: {
+          ...application.job,
+          benefits: application.job.benefits ?? [],
+          companySize: application.job.companySize ?? "medium",
+          workArrangement: application.job.workArrangement ?? "remote",
+          industry: application.job.industry ?? "",
+        },
         status: application.status,
         notes: application.notes || "",
         tags: application.tags || [],
@@ -117,7 +124,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
           requirements: [],
           salary: "" as string,
           url: "",
-          portal: "direct" as const,
+          portal: "direct",
           benefits: [],
           companySize: "medium" as CompanySize,
           workArrangement: "remote" as WorkArrangement,
@@ -240,6 +247,10 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
       },
       createdAt: application?.createdAt || new Date(),
       updatedAt: new Date(),
+      job: {
+        ...formData.job,
+        portal: formData.job.portal as JobPortal,
+      },
     };
 
     onSave(applicationData);
