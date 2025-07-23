@@ -4,7 +4,7 @@ A modern, comprehensive job application tracking system with both web applicatio
 
 ## 🚀 Live Demo
 
-**Demo URL**: https://ar5en1c.github.io/dreamTeam-jobApplicationTracker/dashboard
+**Demo URL**: https://ar5en1c.github.io/dreamTeam-jobApplicationTracker/
 
 > **Note**: The demo uses mock data to showcase functionality. Real backend integration is planned for Phase 3.
 
