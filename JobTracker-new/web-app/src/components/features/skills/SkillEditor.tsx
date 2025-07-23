@@ -132,8 +132,8 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({
       name: skill.name,
       level: skill.level,
       category: skill.category,
-      yearsOfExperience: skill.yearsOfExperience,
-      verified: skill.verified
+      yearsOfExperience: skill.yearsOfExperience || 0,
+      verified: skill.verified || false
     });
   };
 
@@ -516,7 +516,7 @@ export const SkillEditor: React.FC<SkillEditorProps> = ({
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">
-                {Math.round(skills.reduce((sum, s) => sum + s.yearsOfExperience, 0) / skills.length) || 0}
+                {Math.round(skills.reduce((sum, s) => sum + (s.yearsOfExperience || 0), 0) / skills.length) || 0}
               </p>
               <p className="text-sm text-muted-foreground">Avg. Experience</p>
             </div>

@@ -378,3 +378,53 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   };
 }
+
+// Additional utility functions expected by tests
+export const getInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 2);
+};
+
+export const calculateTotalExperience = (experiences: any[]): number => {
+  return experiences.reduce((total, exp) => {
+    const start = new Date(exp.startDate);
+    const end = exp.current ? new Date() : new Date(exp.endDate);
+    const years = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 365);
+    return total + Math.max(0, years);
+  }, 0);
+};
+
+export const formatSalaryRange = (min: number, max: number, currency: string = 'USD'): string => {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+  
+  if (min === max) {
+    return formatter.format(min);
+  }
+  
+  return `${formatter.format(min)} - ${formatter.format(max)}`;
+};
+
+export const isValidEmail = (email: string): boolean => {
+  return validationUtils.isEmail(email);
+};
+
+export const getSkillRecommendations = (currentSkills: string[], targetRole: string): string[] => {
+  // Simple skill recommendations based on role
+  const roleSkillMap: Record<string, string[]> = {
+    'frontend': ['React', 'TypeScript', 'CSS', 'HTML', 'JavaScript'],
+    'backend': ['Node.js', 'Python', 'SQL', 'API Design', 'Docker'],
+    'fullstack': ['React', 'Node.js', 'TypeScript', 'SQL', 'AWS'],
+    'default': ['Communication', 'Problem Solving', 'Teamwork']
+  };
+  
+  const recommendations = roleSkillMap[targetRole.toLowerCase()] || roleSkillMap.default;
+  return recommendations.filter(skill => !currentSkills.includes(skill));
+};

@@ -264,7 +264,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
                           <div className="flex items-center space-x-2">
                             <h4 className="font-medium text-foreground">{skill.name}</h4>
                             {skill.verified && (
-                              <Award className="h-4 w-4 text-green-600" title="Verified Skill" />
+                              <Award className="h-4 w-4 text-green-600" />
                             )}
                           </div>
                           <div className="flex items-center space-x-2 mt-1">

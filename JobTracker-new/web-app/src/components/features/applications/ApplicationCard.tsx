@@ -15,7 +15,6 @@ import {
   DollarSign,
   TrendingUp,
   Users,
-  Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';

@@ -117,6 +117,7 @@ export type JobPortal =
   | 'linkedin' 
   | 'indeed' 
   | 'glassdoor' 
+  | 'direct'
   | 'other';
 
 export type ApplicationStatus = 

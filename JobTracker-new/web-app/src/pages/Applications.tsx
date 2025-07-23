@@ -4,19 +4,16 @@ import {
   Plus, 
   LayoutGrid, 
   List, 
-  Filter,
   ArrowUpDown,
   Calendar,
   Building2,
   TrendingUp,
   Clock,
   Target,
-  Download,
-  Upload
+  Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent } from '@/components/ui/Card';
 import { useToast } from '@/components/ui/Toast';
 import { ApplicationCard } from '@/components/features/applications/ApplicationCard';
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
@@ -119,12 +116,12 @@ export const Applications: React.FC = () => {
       }
 
       // Work arrangement filter
-      if (filters.workArrangements.length > 0 && !filters.workArrangements.includes(app.job.workArrangement)) {
+      if (filters.workArrangements.length > 0 && app.job.workArrangement && !filters.workArrangements.includes(app.job.workArrangement)) {
         return false;
       }
 
       // Company size filter
-      if (filters.companySizes.length > 0 && !filters.companySizes.includes(app.job.companySize)) {
+      if (filters.companySizes.length > 0 && app.job.companySize && !filters.companySizes.includes(app.job.companySize)) {
         return false;
       }
 
@@ -254,7 +251,7 @@ export const Applications: React.FC = () => {
       'Salary': app.job.salary || 'Not specified',
       'Work Arrangement': app.job.workArrangement,
       'Company Size': app.job.companySize || 'Not specified',
-      'Application Link': app.job.applicationUrl || 'Not provided',
+      'Application Link': app.job.url || 'Not provided',
       'Notes': app.notes || 'No notes'
     }));
 
@@ -304,8 +301,8 @@ export const Applications: React.FC = () => {
           responses: []
         },
         documents: {
-          resume: null,
-          coverLetter: null,
+          resume: undefined,
+          coverLetter: undefined,
           others: []
         },
         createdAt: new Date(),

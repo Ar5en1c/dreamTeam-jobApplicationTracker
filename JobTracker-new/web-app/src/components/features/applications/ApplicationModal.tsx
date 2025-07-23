@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Building2, 
-  MapPin, 
-  DollarSign, 
-  Calendar, 
-  ExternalLink,
-  FileText,
-  Tag,
   Save,
   X
 } from 'lucide-react';
@@ -40,7 +33,7 @@ const statusOptions: { value: ApplicationStatus; label: string; color: string }[
 const workArrangementOptions: { value: WorkArrangement; label: string }[] = [
   { value: 'remote', label: 'Remote' },
   { value: 'hybrid', label: 'Hybrid' },
-  { value: 'onsite', label: 'On-site' }
+  { value: 'on-site', label: 'On-site' }
 ];
 
 const companySizeOptions: { value: CompanySize; label: string }[] = [
@@ -97,7 +90,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
           location: '',
           description: '',
           requirements: [],
-          salary: '',
+          salary: '' as string,
           url: '',
           portal: 'direct' as const,
           benefits: [],
@@ -168,6 +161,12 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
       ...formData,
       id: application?.id || `app-${Date.now()}`,
       userId: 'current-user',
+      statusHistory: application?.statusHistory || [{
+        id: `status-${Date.now()}`,
+        status: formData.status,
+        date: new Date(),
+        source: 'manual'
+      }],
       dates: {
         applied: application?.dates.applied || new Date(),
         lastUpdated: new Date(),
@@ -175,9 +174,15 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
         responses: application?.dates.responses || []
       },
       documents: application?.documents || {
-        resume: null,
-        coverLetter: null,
+        resume: undefined,
+        coverLetter: undefined,
         others: []
+      },
+      aiInsights: application?.aiInsights || {
+        matchScore: 0,
+        skillGaps: [],
+        suggestions: [],
+        lastAnalyzed: new Date()
       },
       createdAt: application?.createdAt || new Date(),
       updatedAt: new Date()
