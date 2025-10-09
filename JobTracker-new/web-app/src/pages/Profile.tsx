@@ -351,12 +351,8 @@ export const Profile: React.FC = () => {
       <motion.div variants={itemVariants}>
         <Card
           variant="surface"
-          className={cn(
-            surfaceCardBase,
-            "bg-gradient-to-br from-white/98 via-white/90 to-slate-50/70 border-primary/15 shadow-primary/10 dark:from-slate-950/95 dark:via-slate-900/80 dark:to-slate-900/65"
-          )}
+          className={surfaceCardBase}
         >
-          <div className="pointer-events-none absolute inset-0 -left-16 top-0 hidden h-full w-2/3 bg-gradient-to-br from-primary/15 via-transparent to-transparent blur-3xl lg:block dark:from-primary/25" />
           <CardContent className="relative z-10 px-6 py-7 md:px-9 md:py-9">
             <div className="flex flex-col gap-6 md:flex-row md:items-center">
               <Avatar
@@ -364,7 +360,7 @@ export const Profile: React.FC = () => {
                 alt={profile.personalInfo.name}
                 fallback={profile.personalInfo.name}
                 size="3xl"
-                className="ring-4 ring-white/80 shadow-lg shadow-primary/20 dark:ring-slate-800/80"
+                className="ring-4 ring-primary/10 shadow-lg shadow-primary/10 dark:ring-primary/20"
               />
               <div className="flex-1 space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -372,10 +368,15 @@ export const Profile: React.FC = () => {
                     <h1 className="text-3xl font-semibold text-foreground">
                       {profile.personalInfo.name}
                     </h1>
-                    <p className="text-base text-muted-foreground">
-                      {profile.experience[0]?.title} at{" "}
-                      {profile.experience[0]?.company}
-                    </p>
+                    {profile.experience.length > 0 && profile.experience[0]?.title && profile.experience[0]?.company ? (
+                      <p className="text-base text-muted-foreground">
+                        {profile.experience[0].title} at {profile.experience[0].company}
+                      </p>
+                    ) : (
+                      <p className="text-base text-muted-foreground">
+                        Job Seeker
+                      </p>
+                    )}
                   </div>
                   <Button
                     variant="outline"
@@ -388,17 +389,41 @@ export const Profile: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="h-4 w-4 text-primary/70" />
-                    <span>{profile.personalInfo.email}</span>
-                  </div>
+                  {profile.personalInfo.email && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-4 w-4 text-primary/70" />
+                      <span>{profile.personalInfo.email}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-4 w-4 text-primary/70" />
-                    <span>{profile.personalInfo.phone}</span>
+                    {profile.personalInfo.phone ? (
+                      <span>{profile.personalInfo.phone}</span>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                        onClick={handleEditProfile}
+                      >
+                        Add phone
+                      </Button>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4 text-primary/70" />
-                    <span>{profile.personalInfo.location}</span>
+                    {profile.personalInfo.location ? (
+                      <span>{profile.personalInfo.location}</span>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                        onClick={handleEditProfile}
+                      >
+                        Add location
+                      </Button>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Globe className="h-4 w-4 text-primary/70" />
