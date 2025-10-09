@@ -7,6 +7,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen)]()
 
+**Demo URL**: https://ar5en1c.github.io/dreamTeam-jobApplicationTracker/
+
 ---
 
 ## 🚀 Project Overview
