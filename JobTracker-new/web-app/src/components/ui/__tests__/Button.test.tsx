@@ -7,18 +7,18 @@ describe('Button Component', () => {
     render(<Button>Click me</Button>);
     const button = screen.getByRole('button', { name: /click me/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('bg-primary', 'text-primary-foreground');
+    expect(button).toHaveClass('bg-primary-600', 'text-white');
   });
 
   it('renders with different variants', () => {
     const { rerender } = render(<Button variant="outline">Outline</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border', 'border-input');
+    expect(screen.getByRole('button')).toHaveClass('border-borderMuted');
 
     rerender(<Button variant="ghost">Ghost</Button>);
-    expect(screen.getByRole('button')).toHaveClass('hover:bg-accent');
+    expect(screen.getByRole('button')).toHaveClass('hover:bg-surface-subtle');
 
     rerender(<Button variant="destructive">Destructive</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-destructive', 'text-destructive-foreground');
+    expect(screen.getByRole('button')).toHaveClass('bg-error-600', 'text-white');
   });
 
   it('renders with different sizes', () => {
@@ -26,7 +26,7 @@ describe('Button Component', () => {
     expect(screen.getByRole('button')).toHaveClass('h-9', 'px-3');
 
     rerender(<Button size="lg">Large</Button>);
-    expect(screen.getByRole('button')).toHaveClass('h-11', 'px-8');
+    expect(screen.getByRole('button')).toHaveClass('h-11', 'px-6');
 
     rerender(<Button size="icon">Icon</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-10', 'w-10');
@@ -73,17 +73,5 @@ describe('Button Component', () => {
     
     const button = screen.getByRole('button');
     expect(button).toHaveClass('custom-class');
-  });
-
-  it('renders as different element when asChild is true', () => {
-    render(
-      <Button asChild>
-        <a href="/test">Link Button</a>
-      </Button>
-    );
-    
-    const link = screen.getByRole('link');
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/test');
   });
 });

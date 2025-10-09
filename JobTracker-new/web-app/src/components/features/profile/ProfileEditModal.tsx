@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   User, 
   Mail, 
@@ -15,13 +14,12 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { cn } from '@/lib/utils';
 import type { UserProfile } from '@/types';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (profile: Partial<UserProfile>) => void;
+  onSave: (profile: Partial<UserProfile>) => Promise<boolean>;
   profile: UserProfile;
 }
 
@@ -42,6 +40,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   });
 
   const [newWebsite, setNewWebsite] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (profile && isOpen) {
@@ -90,7 +89,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedProfile: Partial<UserProfile> = {
       ...profile,
       personalInfo: {
@@ -100,8 +99,13 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       updatedAt: new Date()
     };
 
-    onSave(updatedProfile);
-    onClose();
+    setIsSubmitting(true);
+    const success = await onSave(updatedProfile);
+    setIsSubmitting(false);
+
+    if (success) {
+      onClose();
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
@@ -129,7 +133,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             className="ring-2 ring-primary/20"
           />
           <div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" type="button" disabled={isSubmitting}>
               Change Photo
             </Button>
             <p className="text-xs text-muted-foreground mt-1">
@@ -204,7 +208,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               onKeyPress={(e) => handleKeyPress(e, addWebsite)}
               className="flex-1"
             />
-            <Button onClick={addWebsite} size="sm">
+            <Button onClick={addWebsite} size="sm" type="button" disabled={isSubmitting}>
               <Plus className="w-4 h-4 mr-1" />
               Add
             </Button>
@@ -244,10 +248,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
       {/* Footer */}
       <div className="flex justify-end space-x-2 pt-6 border-t border-border mt-6">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} type="button" disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>
+        <Button
+          onClick={handleSave}
+          variant="primary"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           <Save className="w-4 h-4 mr-2" />
           Save Changes
         </Button>

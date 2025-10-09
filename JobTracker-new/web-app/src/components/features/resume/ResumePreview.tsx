@@ -209,9 +209,9 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setIsFullscreen(false)}
         >
-          <div className="relative w-full max-w-4xl h-full max-h-[90vh] bg-white rounded-lg overflow-hidden">
+          <div className="relative w-full max-w-4xl h-full max-h-[90vh] bg-surface-1 rounded-lg overflow-hidden">
             {/* Fullscreen Header */}
-            <div className="flex items-center justify-between p-4 border-b bg-white">
+            <div className="flex items-center justify-between p-4 border-b bg-surface-1">
               <h3 className="font-medium truncate">{resume.name}</h3>
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 text-sm text-muted-foreground">

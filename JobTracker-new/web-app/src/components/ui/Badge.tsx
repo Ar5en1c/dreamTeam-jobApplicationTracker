@@ -4,34 +4,36 @@ import { cn } from '@/lib/utils';
 import type { ComponentProps } from '@/types';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ring-offset-background",
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
-        secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        destructive: 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        outline: 'text-foreground border-border',
-        success: 'border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-        warning: 'border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-        error: 'border-transparent bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-        info: 'border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-        purple: 'border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-        pink: 'border-transparent bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
-        indigo: 'border-transparent bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
-        gray: 'border-transparent bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-        glass: 'glass text-white border-white/30',
-        gradient: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent',
+        default:
+          "border-borderMuted bg-surface-2 text-foreground",
+        secondary:
+          "border-borderMuted bg-surface-subtle text-muted-foreground",
+        outline:
+          "border-border text-foreground bg-transparent",
+        success:
+          "border-success-200 bg-success-50 text-success-700 dark:border-success-500/40 dark:bg-success-600/10 dark:text-success-300",
+        warning:
+          "border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-500/40 dark:bg-warning-600/10 dark:text-warning-300",
+        info:
+          "border-info-200 bg-info-50 text-info-700 dark:border-info-500/40 dark:bg-info-600/10 dark:text-info-300",
+        destructive:
+          "border-error-200 bg-error-50 text-error-700 dark:border-error-500/40 dark:bg-error-600/10 dark:text-error-300",
+        neutral:
+          "border-borderMuted bg-surface-3 text-foreground",
       },
       size: {
-        sm: 'text-xs px-2 py-0.5',
-        default: 'text-xs px-2.5 py-0.5',
-        lg: 'text-sm px-3 py-1',
+        sm: "px-2 py-0.5 text-[11px]",
+        default: "px-2.5 py-0.5",
+        lg: "px-3 py-1 text-sm",
       },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'default',
+      variant: "default",
+      size: "default",
     },
   }
 );
@@ -53,13 +55,13 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         className={cn(badgeVariants({ variant, size }), className)}
         {...props}
       >
-        {icon && <span className="mr-1">{icon}</span>}
+        {icon && <span className="flex items-center">{icon}</span>}
         {children}
         {removable && onRemove && (
           <button
             type="button"
             onClick={onRemove}
-            className="ml-1 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="ml-1 rounded-full p-0.5 transition-colors hover:bg-foreground/10"
             aria-label="Remove"
           >
             <svg
@@ -90,16 +92,16 @@ export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
 }
 
 const statusVariantMap = {
-  draft: 'gray',
+  draft: 'secondary',
   applied: 'info',
   under_review: 'warning',
-  phone_screen: 'purple',
-  interview: 'indigo',
-  final_interview: 'purple',
+  phone_screen: 'info',
+  interview: 'warning',
+  final_interview: 'info',
   offer: 'success',
   rejected: 'destructive',
-  withdrawn: 'gray',
-  expired: 'gray',
+  withdrawn: 'secondary',
+  expired: 'secondary',
 } as const;
 
 const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(

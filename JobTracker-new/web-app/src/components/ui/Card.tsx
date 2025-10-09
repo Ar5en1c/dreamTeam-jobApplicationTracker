@@ -4,33 +4,41 @@ import { cn } from '@/lib/utils';
 import type { ComponentProps } from '@/types';
 
 const cardVariants = cva(
-  'rounded-lg border shadow-sm transition-all duration-200',
+  "relative rounded-xl border border-borderMuted bg-surface-1 text-foreground shadow-sm transition-all duration-200",
   {
     variants: {
       variant: {
-        default: 'bg-card text-card-foreground border-border',
-        glass: 'glass border-white/20',
-        elevated: 'bg-card text-card-foreground border-border shadow-lg hover:shadow-xl',
-        outline: 'border-2 border-dashed border-border bg-background',
-        gradient: 'bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-blue-200 dark:border-blue-800',
+        default: "",
+        surface: "bg-surface-2 shadow-level-1",
+        elevated: "shadow-level-2 border-borderContrast",
+        outline: "bg-transparent border-dashed border-borderMuted",
+        premium:
+          "shadow-level-2 border-primary-200/50 ring-1 ring-primary-100/50 dark:border-primary-500/25 dark:ring-primary-500/15",
+        neutral: "bg-surface-3",
+        glass:
+          "bg-surface-subtle backdrop-blur-md border-borderMuted/60",
       },
       size: {
-        sm: 'p-4',
-        default: 'p-6',
-        lg: 'p-8',
-        xl: 'p-10',
+        sm: "p-4",
+        default: "p-6",
+        lg: "p-8",
+        xl: "p-10",
+        "2xl": "p-12",
       },
       hover: {
-        none: '',
-        lift: 'hover:-translate-y-1 hover:shadow-lg',
-        glow: 'hover:shadow-lg hover:shadow-primary/25',
-        border: 'hover:border-primary/50',
+        none: "",
+        lift: "transition-transform hover:-translate-y-1 hover:shadow-level-2",
+        glow: "hover:shadow-level-3",
+        border: "hover:border-primary-400",
+        scale: "transition-transform hover:scale-[1.02]",
+        "lift-glow":
+          "transition-transform hover:-translate-y-1 hover:shadow-level-3",
       },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'default',
-      hover: 'none',
+      variant: "default",
+      size: "default",
+      hover: "none",
     },
   }
 );

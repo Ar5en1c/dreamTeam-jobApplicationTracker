@@ -108,14 +108,28 @@ const AvatarFallback = React.forwardRef<HTMLDivElement, AvatarFallbackProps>(
     };
 
     const initials = fallback || getInitials(alt);
+    const gradientPalette = [
+      "linear-gradient(135deg, #6366f1 0%, #22d3ee 100%)",
+      "linear-gradient(135deg, #ec4899 0%, #a855f7 100%)",
+      "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+      "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
+      "linear-gradient(135deg, #6b7280 0%, #4338ca 100%)",
+    ];
+
+    const hashString = (value: string) =>
+      value.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+    const gradient =
+      gradientPalette[Math.abs(hashString(initials || '?')) % gradientPalette.length];
 
     return (
       <div
         ref={ref}
         className={cn(
-          'flex h-full w-full items-center justify-center bg-muted text-muted-foreground font-medium',
+          'flex h-full w-full items-center justify-center font-semibold uppercase tracking-wide text-white shadow-sm',
           className
         )}
+        style={{ backgroundImage: gradient }}
         {...props}
       >
         {initials}

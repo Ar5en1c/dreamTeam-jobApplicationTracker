@@ -11,8 +11,9 @@ import type { Skill, SkillLevel, SkillCategory } from '@/types';
 interface SkillsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (skills: Skill[]) => void;
+  onSave: (skills: Skill[]) => Promise<boolean>;
   currentSkills: Skill[];
+  isSaving?: boolean;
 }
 
 const skillLevels: { value: SkillLevel; label: string; color: string }[] = [
@@ -26,7 +27,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  currentSkills
+  currentSkills,
+  isSaving = false
 }) => {
   const { addToast } = useToast();
   const [skills, setSkills] = useState<Skill[]>(currentSkills);
@@ -40,16 +42,12 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
     setSkills(currentSkills);
   }, [currentSkills]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(skills);
-    onClose();
-    
-    addToast({
-      title: 'Skills updated',
-      description: 'Your skills have been successfully updated.',
-      type: 'success'
-    });
+    const success = await onSave(skills);
+    if (success) {
+      onClose();
+    }
   };
 
   const addSkill = () => {
@@ -151,6 +149,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
             size="icon"
             onClick={onClose}
             className="h-8 w-8"
+            type="button"
+            disabled={isSaving}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -207,7 +207,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
                   </select>
                 </div>
               </div>
-              <Button type="button" onClick={addSkill} variant="outline">
+              <Button type="button" onClick={addSkill} variant="outline" disabled={isSaving}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Skill
               </Button>
@@ -327,10 +327,10 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-3 p-6 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button type="submit" variant="primary" disabled={isSaving} loading={isSaving}>
               Save Skills
             </Button>
           </div>

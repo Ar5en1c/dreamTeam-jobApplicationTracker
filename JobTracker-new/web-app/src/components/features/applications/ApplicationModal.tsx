@@ -3,7 +3,9 @@ import { Building2, Save, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Badge } from "@/components/ui/Badge";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import type {
   JobApplication,
@@ -21,39 +23,15 @@ interface ApplicationModalProps {
   mode: "create" | "edit";
 }
 
-const statusOptions: {
-  value: ApplicationStatus;
-  label: string;
-  color: string;
-}[] = [
-  { value: "applied", label: "Applied", color: "bg-blue-100 text-blue-800" },
-  {
-    value: "under_review",
-    label: "Under Review",
-    color: "bg-yellow-100 text-yellow-800",
-  },
-  {
-    value: "phone_screen",
-    label: "Phone Screen",
-    color: "bg-purple-100 text-purple-800",
-  },
-  {
-    value: "interview",
-    label: "Interview",
-    color: "bg-orange-100 text-orange-800",
-  },
-  {
-    value: "final_interview",
-    label: "Final Interview",
-    color: "bg-indigo-100 text-indigo-800",
-  },
-  { value: "offer", label: "Offer", color: "bg-green-100 text-green-800" },
-  { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-800" },
-  {
-    value: "withdrawn",
-    label: "Withdrawn",
-    color: "bg-gray-100 text-gray-800",
-  },
+const statusOptions: { value: ApplicationStatus; label: string }[] = [
+  { value: "applied", label: "Applied" },
+  { value: "under_review", label: "Under Review" },
+  { value: "phone_screen", label: "Phone Screen" },
+  { value: "interview", label: "Interview" },
+  { value: "final_interview", label: "Final Interview" },
+  { value: "offer", label: "Offer" },
+  { value: "rejected", label: "Rejected" },
+  { value: "withdrawn", label: "Withdrawn" },
 ];
 
 const workArrangementOptions: { value: WorkArrangement; label: string }[] = [
@@ -76,6 +54,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
   application,
   mode,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     job: {
       title: "",
@@ -216,10 +195,15 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
   };
 
   const handleSave = () => {
+    if (!user) {
+      console.error('No authenticated user found');
+      return;
+    }
+
     const applicationData: Partial<JobApplication> = {
       ...formData,
       id: application?.id || `app-${Date.now()}`,
-      userId: "current-user",
+      userId: user.id,
       statusHistory: application?.statusHistory || [
         {
           id: `status-${Date.now()}`,
@@ -271,7 +255,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
     >
       <div className="space-y-6">
         {/* Basic Information */}
-        <div className="p-4 rounded-lg border border-border bg-muted/30">
+        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
           <h3 className="font-semibold mb-4 flex items-center">
             <Building2 className="w-4 h-4 mr-2" />
             Basic Information
@@ -341,23 +325,18 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
         </div>
 
         {/* Job Details */}
-        <div className="p-4 rounded-lg border border-border bg-muted/30">
+        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
           <h3 className="font-semibold mb-4">Job Details</h3>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
-              <textarea
-                className="w-full p-3 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
-                rows={3}
-                placeholder="Brief job description..."
-                value={formData.job.description}
-                onChange={(e) =>
-                  updateFormData("job", "description", e.target.value)
-                }
-              />
-            </div>
+            <Textarea
+              label="Description"
+              rows={3}
+              placeholder="Brief job description..."
+              value={formData.job.description}
+              onChange={(e) =>
+                updateFormData("job", "description", e.target.value)
+              }
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -470,7 +449,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
         </div>
 
         {/* Application Status & Notes */}
-        <div className="p-4 rounded-lg border border-border bg-muted/30">
+        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
           <h3 className="font-semibold mb-4">Application Status</h3>
           <div className="space-y-4">
             <div>
@@ -493,16 +472,13 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Notes</label>
-              <textarea
-                className="w-full p-3 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
-                rows={3}
-                placeholder="Add any notes about this application..."
-                value={formData.notes}
-                onChange={(e) => updateFormData("notes", e.target.value)}
-              />
-            </div>
+            <Textarea
+              label="Notes"
+              rows={3}
+              placeholder="Add any notes about this application..."
+              value={formData.notes}
+              onChange={(e) => updateFormData("notes", e.target.value)}
+            />
 
             {/* Tags */}
             <div>
@@ -536,7 +512,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end space-x-2 pt-4 border-t border-border mt-6">
+      <div className="flex justify-end gap-2 border-t border-borderMuted pt-4 mt-6">
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>

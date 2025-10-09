@@ -94,10 +94,19 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
     updateFilters({ [field]: newArray });
   };
 
+  const panelSurfaceClass =
+    "rounded-xl border border-borderMuted bg-surface-1 shadow-sm transition-colors";
+  const filterLabelClass =
+    "flex items-center text-sm font-semibold text-foreground";
+  const optionLabelClass =
+    "flex items-center gap-2 rounded-lg px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-surface-2 cursor-pointer";
+  const checkboxClass =
+    "h-4 w-4 rounded border-borderMuted bg-surface-1 text-primary focus:ring-primary/40";
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Quick Search and Toggle */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-4">
         <div className="flex-1">
           <Input
             type="search"
@@ -105,16 +114,16 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
             value={filters.search}
             onChange={(e) => updateFilters({ search: e.target.value })}
             leftIcon={<Search className="h-4 w-4" />}
-            className="w-full"
+            className="w-full rounded-lg"
           />
         </div>
         
         <Button
           variant="outline"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center space-x-2"
+          className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium"
         >
-          <SlidersHorizontal className="w-4 h-4" />
+          <SlidersHorizontal className="h-4 w-4" />
           <span>Filters</span>
           {activeFilterCount > 0 && (
             <Badge variant="secondary" size="sm">
@@ -130,8 +139,8 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
         </Button>
 
         {activeFilterCount > 0 && (
-          <Button variant="ghost" onClick={clearFilters} size="sm">
-            <X className="w-4 h-4 mr-1" />
+          <Button variant="ghost" onClick={clearFilters} size="sm" className="h-9 px-3 text-sm text-muted-foreground">
+            <X className="mr-1 h-4 w-4" />
             Clear
           </Button>
         )}
@@ -185,27 +194,27 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Card>
-              <CardContent className="p-6">
+            <Card variant="surface" className={cn(panelSurfaceClass, "mt-4")}>
+              <CardContent className="relative z-10 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   
                   {/* Status Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <Briefcase className="w-4 h-4 mr-2" />
+                    <label className={filterLabelClass}>
+                      <Briefcase className="mr-2 h-4 w-4" />
                       Status
                     </label>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {APPLICATION_STATUSES.map(status => (
-                        <label key={status.value} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={status.value} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.statuses.includes(status.value)}
                             onChange={() => toggleArrayFilter(filters.statuses, status.value, 'statuses')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
-                          <span className="text-sm">{status.label}</span>
-                          <span className="text-xs">{status.icon}</span>
+                          <span>{status.label}</span>
+                          <span className="text-xs opacity-70">{status.icon}</span>
                         </label>
                       ))}
                     </div>
@@ -213,20 +222,20 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
 
                   {/* Company Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <Building2 className="w-4 h-4 mr-2" />
+                    <label className="flex items-center text-sm font-semibold text-foreground">
+                      <Building2 className="mr-2 h-4 w-4" />
                       Company
                     </label>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {availableCompanies.map(company => (
-                        <label key={company} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={company} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.companies.includes(company)}
                             onChange={() => toggleArrayFilter(filters.companies, company, 'companies')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
-                          <span className="text-sm">{company}</span>
+                          <span>{company}</span>
                         </label>
                       ))}
                     </div>
@@ -234,20 +243,20 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
 
                   {/* Location Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <MapPin className="w-4 h-4 mr-2" />
+                    <label className={filterLabelClass}>
+                      <MapPin className="mr-2 h-4 w-4" />
                       Location
                     </label>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {availableLocations.map(location => (
-                        <label key={location} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={location} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.locations.includes(location)}
                             onChange={() => toggleArrayFilter(filters.locations, location, 'locations')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
-                          <span className="text-sm">{location}</span>
+                          <span>{location}</span>
                         </label>
                       ))}
                     </div>
@@ -255,21 +264,21 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
 
                   {/* Work Arrangement Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <Clock className="w-4 h-4 mr-2" />
+                    <label className={filterLabelClass}>
+                      <Clock className="mr-2 h-4 w-4" />
                       Work Style
                     </label>
                     <div className="space-y-2">
                       {WORK_ARRANGEMENTS.map(arrangement => (
-                        <label key={arrangement.value} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={arrangement.value} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.workArrangements.includes(arrangement.value)}
                             onChange={() => toggleArrayFilter(filters.workArrangements, arrangement.value, 'workArrangements')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
-                          <span className="text-sm">{arrangement.label}</span>
-                          <span className="text-xs">{arrangement.icon}</span>
+                          <span>{arrangement.label}</span>
+                          <span className="text-xs opacity-70">{arrangement.icon}</span>
                         </label>
                       ))}
                     </div>
@@ -277,22 +286,22 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
 
                   {/* Company Size Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <Building2 className="w-4 h-4 mr-2" />
+                    <label className={filterLabelClass}>
+                      <Building2 className="mr-2 h-4 w-4" />
                       Company Size
                     </label>
                     <div className="space-y-2">
                       {COMPANY_SIZES.map(size => (
-                        <label key={size.value} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={size.value} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.companySizes.includes(size.value)}
                             onChange={() => toggleArrayFilter(filters.companySizes, size.value, 'companySizes')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
                           <div>
-                            <span className="text-sm">{size.label}</span>
-                            <p className="text-xs text-muted-foreground">{size.description}</p>
+                            <span>{size.label}</span>
+                            <p className="text-xs text-muted-foreground/80">{size.description}</p>
                           </div>
                         </label>
                       ))}
@@ -301,20 +310,20 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
 
                   {/* Tags Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium flex items-center">
-                      <Filter className="w-4 h-4 mr-2" />
+                    <label className={filterLabelClass}>
+                      <Filter className="mr-2 h-4 w-4" />
                       Tags
                     </label>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {availableTags.map(tag => (
-                        <label key={tag} className="flex items-center space-x-2 cursor-pointer">
+                        <label key={tag} className={optionLabelClass}>
                           <input
                             type="checkbox"
                             checked={filters.tags.includes(tag)}
                             onChange={() => toggleArrayFilter(filters.tags, tag, 'tags')}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
+                            className={checkboxClass}
                           />
-                          <span className="text-sm">{tag}</span>
+                          <span>{tag}</span>
                         </label>
                       ))}
                     </div>
@@ -323,14 +332,14 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
                 </div>
 
                 {/* Salary Range */}
-                <div className="mt-6 pt-6 border-t">
-                  <label className="text-sm font-medium flex items-center mb-3">
-                    <DollarSign className="w-4 h-4 mr-2" />
+                <div className="mt-6 border-t border-borderMuted pt-6">
+                  <label className={cn(filterLabelClass, "mb-3")}>
+                    <DollarSign className="mr-2 h-4 w-4" />
                     Salary Range
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Minimum</label>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground/80">Minimum</label>
                       <Input
                         type="number"
                         placeholder="0"
@@ -341,10 +350,11 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
                             min: parseInt(e.target.value) || 0 
                           }
                         })}
+                        className="rounded-lg"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Maximum</label>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground/80">Maximum</label>
                       <Input
                         type="number"
                         placeholder="500000"
@@ -355,20 +365,21 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
                             max: parseInt(e.target.value) || 500000 
                           }
                         })}
+                        className="rounded-lg"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Date Range */}
-                <div className="mt-6 pt-6 border-t">
-                  <label className="text-sm font-medium flex items-center mb-3">
-                    <Calendar className="w-4 h-4 mr-2" />
+                <div className="mt-6 border-t border-borderMuted pt-6">
+                  <label className={cn(filterLabelClass, "mb-3")}>
+                    <Calendar className="mr-2 h-4 w-4" />
                     Application Date Range
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">From</label>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground/80">From</label>
                       <Input
                         type="date"
                         value={filters.dateRange.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
@@ -378,10 +389,11 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
                             start: e.target.value ? new Date(e.target.value) : null 
                           }
                         })}
+                        className="rounded-lg"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">To</label>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground/80">To</label>
                       <Input
                         type="date"
                         value={filters.dateRange.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
@@ -391,6 +403,7 @@ export const ApplicationFilters: React.FC<ApplicationFiltersProps> = ({
                             end: e.target.value ? new Date(e.target.value) : null 
                           }
                         })}
+                        className="rounded-lg"
                       />
                     </div>
                   </div>

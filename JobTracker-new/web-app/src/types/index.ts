@@ -7,6 +7,7 @@ export interface UserProfile {
     email: string;
     phone: string;
     location: string;
+    bio?: string;
     websites: string[];
   };
   education: Education[];

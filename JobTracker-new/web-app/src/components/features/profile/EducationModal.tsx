@@ -3,14 +3,13 @@ import { motion } from 'framer-motion';
 import { X, Calendar, GraduationCap, School, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import type { Education } from '@/types';
 
 interface EducationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (education: Omit<Education, 'id'>) => void;
+  onSave: (education: Omit<Education, 'id'>) => Promise<boolean>;
   education?: Education;
   mode: 'create' | 'edit';
 }
@@ -47,6 +46,7 @@ export const EducationModal: React.FC<EducationModalProps> = ({
     achievements: [] as string[]
   });
   const [newAchievement, setNewAchievement] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (education) {
@@ -77,7 +77,7 @@ export const EducationModal: React.FC<EducationModalProps> = ({
     }
   }, [education, mode]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.institution.trim() || !formData.degree.trim() || !formData.field.trim() || !formData.startDate) {
@@ -110,14 +110,33 @@ export const EducationModal: React.FC<EducationModalProps> = ({
       achievements: formData.achievements.length > 0 ? formData.achievements : undefined
     };
 
-    onSave(educationData);
-    onClose();
-    
-    addToast({
-      title: mode === 'create' ? 'Education added' : 'Education updated',
-      description: `Successfully ${mode === 'create' ? 'added' : 'updated'} education at ${formData.institution}.`,
-      type: 'success'
-    });
+    try {
+      setIsSubmitting(true);
+      const success = await onSave(educationData);
+
+      if (success) {
+        addToast({
+          title: mode === 'create' ? 'Education added' : 'Education updated',
+          description: `Successfully ${mode === 'create' ? 'added' : 'updated'} education at ${formData.institution}.`,
+          type: 'success'
+        });
+        onClose();
+      } else {
+        addToast({
+          title: 'Unable to save education',
+          description: 'Something went wrong while saving your changes.',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      addToast({
+        title: 'Unexpected error',
+        description: error instanceof Error ? error.message : 'Something went wrong while saving your education.',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addAchievement = () => {
@@ -156,6 +175,8 @@ export const EducationModal: React.FC<EducationModalProps> = ({
             size="icon"
             onClick={onClose}
             className="h-8 w-8"
+            type="button"
+            disabled={isSubmitting}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -343,10 +364,15 @@ export const EducationModal: React.FC<EducationModalProps> = ({
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button
+              type="submit"
+              variant="primary"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
               {mode === 'create' ? 'Add Education' : 'Update Education'}
             </Button>
           </div>

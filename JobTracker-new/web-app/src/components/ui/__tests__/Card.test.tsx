@@ -13,7 +13,7 @@ describe('Card Components', () => {
       
       const card = screen.getByTestId('card');
       expect(card).toBeInTheDocument();
-      expect(card).toHaveClass('rounded-lg', 'border', 'bg-card');
+      expect(card).toHaveClass('rounded-xl', 'border', 'bg-surface-1');
     });
 
     it('applies hover variant', () => {
@@ -24,7 +24,7 @@ describe('Card Components', () => {
       );
       
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass('hover:scale-105', 'transition-transform');
+      expect(card).toHaveClass('hover:-translate-y-1', 'hover:shadow-level-2');
     });
 
     it('applies custom className', () => {
@@ -49,7 +49,7 @@ describe('Card Components', () => {
       
       const header = screen.getByTestId('header');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('flex', 'flex-col', 'space-y-1.5', 'p-6');
+      expect(header).toHaveClass('flex', 'flex-col', 'space-y-1.5', 'pb-6');
     });
   });
 
@@ -77,7 +77,7 @@ describe('Card Components', () => {
       
       const content = screen.getByTestId('content');
       expect(content).toBeInTheDocument();
-      expect(content).toHaveClass('p-6', 'pt-0');
+      expect(content).toHaveClass('pt-0');
     });
   });
 

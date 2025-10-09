@@ -10,7 +10,7 @@ import type { Experience } from '@/types';
 interface ExperienceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (experience: Omit<Experience, 'id'>) => void;
+  onSave: (experience: Omit<Experience, 'id'>) => Promise<boolean>;
   experience?: Experience;
   mode: 'create' | 'edit';
 }
@@ -36,6 +36,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
   });
   const [newSkill, setNewSkill] = useState('');
   const [newAchievement, setNewAchievement] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (experience) {
@@ -66,7 +67,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
     }
   }, [experience, mode]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.company.trim() || !formData.title.trim() || !formData.startDate) {
@@ -90,14 +91,33 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
       achievements: formData.achievements.length > 0 ? formData.achievements : undefined
     };
 
-    onSave(experienceData);
-    onClose();
-    
-    addToast({
-      title: mode === 'create' ? 'Experience added' : 'Experience updated',
-      description: `Successfully ${mode === 'create' ? 'added' : 'updated'} experience at ${formData.company}.`,
-      type: 'success'
-    });
+    try {
+      setIsSubmitting(true);
+      const success = await onSave(experienceData);
+
+      if (success) {
+        addToast({
+          title: mode === 'create' ? 'Experience added' : 'Experience updated',
+          description: `Successfully ${mode === 'create' ? 'added' : 'updated'} experience at ${formData.company}.`,
+          type: 'success'
+        });
+        onClose();
+      } else {
+        addToast({
+          title: 'Unable to save experience',
+          description: 'Something went wrong while saving your changes.',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      addToast({
+        title: 'Unexpected error',
+        description: error instanceof Error ? error.message : 'Something went wrong while saving your experience.',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addSkill = () => {
@@ -153,6 +173,8 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
             size="icon"
             onClick={onClose}
             className="h-8 w-8"
+            type="button"
+            disabled={isSubmitting}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -344,10 +366,15 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button
+              type="submit"
+              variant="primary"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
               {mode === 'create' ? 'Add Experience' : 'Update Experience'}
             </Button>
           </div>

@@ -19,12 +19,12 @@ import { ApplicationCard } from '@/components/features/applications/ApplicationC
 import { ApplicationFilters } from '@/components/features/applications/ApplicationFilters';
 import { ApplicationModal } from '@/components/features/applications/ApplicationModal';
 import { ConfirmModal } from '@/components/ui/Modal';
-import { mockJobApplications } from '@/lib/mockData';
+import { useJobApplications } from '@/hooks/useJobApplications';
 import { cn } from '@/lib/utils';
 import type { JobApplication, ApplicationStatus, WorkArrangement, CompanySize } from '@/types';
 
 type ViewMode = 'grid' | 'list';
-type SortOption = 'date' | 'company' | 'status' | 'match';
+type SortOption = 'date' | 'company' | 'status';
 
 interface FilterOptions {
   search: string;
@@ -55,7 +55,15 @@ const itemVariants = {
 
 export const Applications: React.FC = () => {
   const { addToast } = useToast();
-  const [applications, setApplications] = useState<JobApplication[]>(mockJobApplications);
+  const { 
+    applications, 
+    loading, 
+    error, 
+    createApplication, 
+    updateApplication, 
+    deleteApplication,
+    isUsingMockData 
+  } = useJobApplications();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -145,7 +153,7 @@ export const Applications: React.FC = () => {
     // Sort applications
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'date':
           comparison = a.updatedAt.getTime() - b.updatedAt.getTime();
@@ -157,11 +165,8 @@ export const Applications: React.FC = () => {
           const statusOrder = ['offer', 'final_interview', 'interview', 'phone_screen', 'under_review', 'applied', 'rejected', 'withdrawn'];
           comparison = statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
           break;
-        case 'match':
-          comparison = (a.aiInsights?.matchScore || 0) - (b.aiInsights?.matchScore || 0);
-          break;
       }
-      
+
       return sortOrder === 'desc' ? -comparison : comparison;
     });
 
@@ -184,11 +189,11 @@ export const Applications: React.FC = () => {
     return { total, active, interviews, offers };
   }, [filteredAndSortedApplications]);
 
-  const handleSort = (option: SortOption) => {
-    if (sortBy === option) {
+  const handleSort = (sortOption: SortOption) => {
+    if (sortBy === sortOption) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortBy(option);
+      setSortBy(sortOption);
       setSortOrder('desc');
     }
   };
@@ -197,29 +202,41 @@ export const Applications: React.FC = () => {
     setDeleteModal({ isOpen: true, applicationId });
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteModal.applicationId) {
-      setApplications(prev => prev.filter(app => app.id !== deleteModal.applicationId));
-      setDeleteModal({ isOpen: false, applicationId: null });
-      addToast({
-        title: 'Application deleted',
-        description: 'The job application has been permanently removed.',
-        type: 'success'
-      });
+      const success = await deleteApplication(deleteModal.applicationId);
+      if (success) {
+        addToast({
+          title: 'Application deleted',
+          description: 'The application has been successfully removed.',
+          type: 'success'
+        });
+      } else {
+        addToast({
+          title: 'Delete failed',
+          description: 'Failed to delete the application. Please try again.',
+          type: 'error'
+        });
+      }
     }
+    setDeleteModal({ isOpen: false, applicationId: null });
   };
 
-  const handleArchive = (applicationId: string) => {
-    setApplications(prev => prev.map(app => 
-      app.id === applicationId 
-        ? { ...app, status: 'withdrawn' as ApplicationStatus, updatedAt: new Date() }
-        : app
-    ));
-    addToast({
-      title: 'Application archived',
-      description: 'The job application has been moved to withdrawn status.',
-      type: 'info'
-    });
+  const handleArchive = async (applicationId: string) => {
+    const success = await updateApplication(applicationId, { status: 'withdrawn' });
+    if (success) {
+      addToast({
+        title: 'Application archived',
+        description: 'The application has been marked as withdrawn.',
+        type: 'success'
+      });
+    } else {
+      addToast({
+        title: 'Archive failed',
+        description: 'Failed to archive the application. Please try again.',
+        type: 'error'
+      });
+    }
   };
 
   const handleEdit = (application: JobApplication) => {
@@ -288,78 +305,102 @@ export const Applications: React.FC = () => {
     });
   };
 
-  const handleSaveApplication = (applicationData: Partial<JobApplication>) => {
+  const handleSaveApplication = async (applicationData: Partial<JobApplication>) => {
     if (modalMode === 'create') {
-      const newApplication: JobApplication = {
-        ...applicationData as JobApplication,
-        id: `app-${Date.now()}`,
-        userId: 'current-user',
-        dates: {
-          applied: new Date(),
-          lastUpdated: new Date(),
-          interviews: [],
-          responses: []
-        },
-        documents: {
-          resume: undefined,
-          coverLetter: undefined,
-          others: []
-        },
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      setApplications(prev => [newApplication, ...prev]);
-      addToast({
-        title: 'Application created',
-        description: `Successfully added application for ${applicationData.job?.title} at ${applicationData.job?.company}.`,
-        type: 'success'
-      });
-    } else {
-      setApplications(prev => prev.map(app => 
-        app.id === selectedApplication?.id 
-          ? { ...app, ...applicationData, updatedAt: new Date() }
-          : app
-      ));
-      addToast({
-        title: 'Application updated',
-        description: 'Your changes have been saved successfully.',
-        type: 'success'
-      });
+      const success = await createApplication(applicationData);
+      if (success) {
+        addToast({
+          title: 'Application created',
+          description: `Successfully added application for ${applicationData.job?.title} at ${applicationData.job?.company}.`,
+          type: 'success'
+        });
+      } else {
+        addToast({
+          title: 'Creation failed',
+          description: 'Failed to create application. Please try again.',
+          type: 'error'
+        });
+      }
+    } else if (selectedApplication) {
+      const success = await updateApplication(selectedApplication.id, applicationData);
+      if (success) {
+        addToast({
+          title: 'Application updated',
+          description: 'Your changes have been saved successfully.',
+          type: 'success'
+        });
+      } else {
+        addToast({
+          title: 'Update failed',
+          description: 'Failed to update application. Please try again.',
+          type: 'error'
+        });
+      }
     }
     setIsModalOpen(false);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+          <Building2 className="w-8 h-8 text-red-600 dark:text-red-400" />
+        </div>
+        <h3 className="text-lg font-medium text-foreground mb-2">Failed to load applications</h3>
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">{error}</p>
+        <Button
+          variant="primary"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-8"
+      className="space-y-8 max-w-6xl mx-auto"
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Job Applications</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Job Applications</h1>
+            <p className="mt-1 text-muted-foreground">
               Track and manage your job search progress
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-            <Button 
-              variant="outline" 
-              size="default"
+            <Button
+              variant="outline"
+              size="lg"
               onClick={handleExportData}
               disabled={filteredAndSortedApplications.length === 0}
             >
-              <Download className="w-4 h-4 mr-2" />
-              Export
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Export</span>
+              <span className="sm:hidden">Export</span>
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            <Button
+              variant="primary"
+              size="lg"
               onClick={handleCreateNew}
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add Application
             </Button>
           </div>
@@ -367,58 +408,61 @@ export const Applications: React.FC = () => {
       </motion.div>
 
       {/* Statistics */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card hover="lift" className="glass border-blue-200">
-          <CardContent className="p-6">
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:gap-5"
+      >
+        <Card variant="surface" hover="lift" className="border-borderMuted">
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+                <p className="mt-1 text-3xl font-semibold text-foreground">{stats.total}</p>
               </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-blue-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 text-primary-600 dark:bg-primary-500/20 dark:text-primary-200">
+                <Building2 className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card hover="lift" className="glass border-green-200">
-          <CardContent className="p-6">
+        <Card variant="surface" hover="lift" className="border-borderMuted">
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                <p className="mt-1 text-3xl font-semibold text-foreground">{stats.active}</p>
               </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-success-100 text-success-600 dark:bg-success-600/20 dark:text-success-300">
+                <TrendingUp className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card hover="lift" className="glass border-purple-200">
-          <CardContent className="p-6">
+        <Card variant="surface" hover="lift" className="border-borderMuted">
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Interviews</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.interviews}</p>
+                <p className="mt-1 text-3xl font-semibold text-foreground">{stats.interviews}</p>
               </div>
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Clock className="h-6 w-6 text-purple-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-info-100 text-info-600 dark:bg-info-500/20 dark:text-info-300">
+                <Clock className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card hover="lift" className="glass border-orange-200">
-          <CardContent className="p-6">
+        <Card variant="surface" hover="lift" className="border-borderMuted">
+          <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Offers</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.offers}</p>
+                <p className="mt-1 text-3xl font-semibold text-foreground">{stats.offers}</p>
               </div>
-              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Target className="h-6 w-6 text-orange-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning-100 text-warning-600 dark:bg-warning-600/20 dark:text-warning-300">
+                <Target className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -438,7 +482,7 @@ export const Applications: React.FC = () => {
 
       {/* Controls */}
       <motion.div variants={itemVariants}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div className="flex items-center space-x-4">
             <p className="text-sm text-muted-foreground">
               {filteredAndSortedApplications.length} of {applications.length} applications
@@ -452,51 +496,60 @@ export const Applications: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleSort('date')}
-                className={cn(sortBy === 'date' && "bg-muted", "h-9 px-3")}
+                className={cn(
+                  "h-9 px-3 text-sm",
+                  sortBy === 'date'
+                    ? "bg-primary-50 text-primary-600 dark:bg-primary-600/20 dark:text-primary-200"
+                    : "text-muted-foreground"
+                )}
               >
-                <Calendar className="w-4 h-4 mr-1" />
+                <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">Date</span>
-                {sortBy === 'date' && <ArrowUpDown className="w-3 h-3 ml-1" />}
+                {sortBy === 'date' && <ArrowUpDown className="ml-1 h-3 w-3" />}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleSort('company')}
-                className={cn(sortBy === 'company' && "bg-muted", "h-9 px-3")}
+                className={cn(
+                  "h-9 px-3 text-sm",
+                  sortBy === 'company'
+                    ? "bg-primary-50 text-primary-600 dark:bg-primary-600/20 dark:text-primary-200"
+                    : "text-muted-foreground"
+                )}
               >
-                <Building2 className="w-4 h-4 mr-1" />
+                <Building2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Company</span>
-                {sortBy === 'company' && <ArrowUpDown className="w-3 h-3 ml-1" />}
+                {sortBy === 'company' && <ArrowUpDown className="ml-1 h-3 w-3" />}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleSort('match')}
-                className={cn(sortBy === 'match' && "bg-muted", "h-9 px-3")}
-              >
-                <TrendingUp className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Match</span>
-                {sortBy === 'match' && <ArrowUpDown className="w-3 h-3 ml-1" />}
-              </Button>
+              {/* AI Match sorting removed - feature not yet implemented */}
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center border rounded-lg p-1">
+            <div className="flex items-center rounded-lg border border-borderMuted bg-surface-1 p-1 shadow-sm">
               <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="touch"
+                variant="ghost"
+                size="icon"
                 onClick={() => setViewMode('grid')}
-                className="h-10 w-10 sm:h-8 sm:w-8"
+                className={cn(
+                  viewMode === 'grid'
+                    ? "bg-primary-50 text-primary-600 dark:bg-primary-600/20 dark:text-primary-200"
+                    : "text-muted-foreground"
+                )}
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="h-4 w-4" />
               </Button>
               <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="touch"
+                variant="ghost"
+                size="icon"
                 onClick={() => setViewMode('list')}
-                className="h-10 w-10 sm:h-8 sm:w-8"
+                className={cn(
+                  viewMode === 'list'
+                    ? "bg-primary-50 text-primary-600 dark:bg-primary-600/20 dark:text-primary-200"
+                    : "text-muted-foreground"
+                )}
               >
-                <List className="w-4 h-4" />
+                <List className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -524,29 +577,30 @@ export const Applications: React.FC = () => {
             ))}
           </div>
         ) : (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                  <Building2 className="w-8 h-8 text-muted-foreground" />
+          <Card variant="premium" className="text-center py-12">
+            <CardContent className="pt-0">
+              <div className="flex flex-col items-center space-y-6">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border border-primary-200/60 bg-surface-2 text-primary-600 dark:border-primary-500/30 dark:bg-surface-3 dark:text-primary-300">
+                  <Building2 className="h-10 w-10" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-medium">
+                  <h3 className="text-xl font-bold text-foreground">
                     {applications.length === 0 ? 'No applications yet' : 'No matching applications'}
                   </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    {applications.length === 0 
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    {applications.length === 0
                       ? 'Start tracking your job applications to monitor your progress and optimize your search.'
                       : 'Try adjusting your filters to see more results.'
                     }
                   </p>
                 </div>
                 {applications.length === 0 && (
-                  <Button 
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  <Button
+                    variant="primary"
+                    size="lg"
                     onClick={handleCreateNew}
+                    leftIcon={<Plus className="w-5 h-5" />}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
                     Add Your First Application
                   </Button>
                 )}

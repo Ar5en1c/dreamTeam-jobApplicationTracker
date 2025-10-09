@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  Palette, 
-  Globe, 
-  Download, 
-  Trash2,
+import {
+  User,
+  Bell,
+  Palette,
   Save,
   Moon,
   Sun,
@@ -15,17 +11,16 @@ import {
   Monitor,
   Mail,
   MessageSquare,
-  Calendar,
-  Archive,
-  Eye,
-  EyeOff
+  Calendar
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { useToast } from '@/components/ui/Toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 const containerVariants = {
@@ -64,68 +59,95 @@ const settingsSections: SettingsSection[] = [
     description: 'Configure notification preferences'
   },
   {
-    id: 'privacy',
-    title: 'Privacy & Security',
-    icon: <Shield className="w-5 h-5" />,
-    description: 'Control your privacy and security settings'
-  },
-  {
     id: 'appearance',
     title: 'Appearance',
     icon: <Palette className="w-5 h-5" />,
     description: 'Customize the look and feel'
-  },
-  {
-    id: 'data',
-    title: 'Data & Storage',
-    icon: <Archive className="w-5 h-5" />,
-    description: 'Manage your data and export options'
   }
 ];
 
+const initialSettings = {
+  notifications: {
+    email: true,
+    push: true,
+    applicationUpdates: true,
+    deadlineReminders: true,
+    weeklyDigest: false
+  },
+  appearance: {
+    theme: 'system' as 'light' | 'dark' | 'system',
+    compactMode: false,
+    animationsEnabled: true
+  }
+};
+
+type SettingsState = typeof initialSettings;
+
 export const Settings: React.FC = () => {
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const { profile, loading: profileLoading, updateProfile } = useUserProfile();
+  const { theme: activeTheme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('account');
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return false;
-  });
+  const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Load real user data from profile
   const [accountInfo, setAccountInfo] = useState({
-    fullName: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA',
-    bio: 'Experienced software developer passionate about creating innovative solutions.'
-  });
-  const [settings, setSettings] = useState({
-    notifications: {
-      email: true,
-      push: true,
-      applicationUpdates: true,
-      deadlineReminders: true,
-      weeklyDigest: false,
-      marketingEmails: false
-    },
-    privacy: {
-      profileVisible: true,
-      shareAnalytics: false,
-      twoFactorAuth: false
-    },
-    appearance: {
-      theme: (typeof window !== 'undefined' ? localStorage.getItem('theme') || 'system' : 'system') as 'light' | 'dark' | 'system',
-      compactMode: false,
-      animationsEnabled: true
-    }
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    bio: ''
   });
 
-  const updateSetting = (section: string, key: string, value: any) => {
+  const [settings, setSettings] = useState<SettingsState>(() => ({
+    ...initialSettings,
+    appearance: {
+      ...initialSettings.appearance,
+      theme: activeTheme,
+    },
+  }));
+  const surfaceCardClass =
+    "rounded-xl border border-borderMuted bg-surface-1 shadow-sm transition-colors";
+
+  // Load profile data when available
+  useEffect(() => {
+    if (profile && user) {
+      setAccountInfo({
+        fullName: profile.personalInfo.name || '',
+        email: user.email || '',
+        phone: profile.personalInfo.phone || '',
+        location: profile.personalInfo.location || '',
+        bio: profile.personalInfo.bio || ''
+      });
+    }
+  }, [profile, user]);
+
+  useEffect(() => {
+    setSettings(prev => {
+      if (prev.appearance.theme === activeTheme) {
+        return prev;
+      }
+      return {
+        ...prev,
+        appearance: {
+          ...prev.appearance,
+          theme: activeTheme,
+        },
+      };
+    });
+  }, [activeTheme]);
+
+  const updateSetting = <Section extends keyof SettingsState, Key extends keyof SettingsState[Section]>(
+    section: Section,
+    key: Key,
+    value: SettingsState[Section][Key]
+  ) => {
     setSettings(prev => ({
       ...prev,
       [section]: {
-        ...prev[section as keyof typeof prev],
+        ...prev[section],
         [key]: value
       }
     }));
@@ -140,141 +162,143 @@ export const Settings: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
-  const handleSaveSettings = () => {
-    // Simulate saving settings
-    setTimeout(() => {
-      setHasUnsavedChanges(false);
-      addToast({
-        title: 'Settings saved',
-        description: 'Your preferences have been updated successfully.',
-        type: 'success'
+  const handleSaveSettings = async () => {
+    if (!profile) return;
+
+    try {
+      setSaving(true);
+
+      // Update profile in database
+      const success = await updateProfile({
+        personalInfo: {
+          ...profile.personalInfo,
+          name: accountInfo.fullName,
+          phone: accountInfo.phone,
+          location: accountInfo.location,
+          bio: accountInfo.bio
+        }
       });
-    }, 500);
+
+      if (success) {
+        setHasUnsavedChanges(false);
+        addToast({
+          title: 'Settings saved',
+          description: 'Your preferences have been updated successfully.',
+          type: 'success'
+        });
+      } else {
+        addToast({
+          title: 'Save failed',
+          description: 'Failed to save settings. Please try again.',
+          type: 'error'
+        });
+      }
+    } catch (err) {
+      console.error('Failed to save settings', err);
+      addToast({
+        title: 'Error',
+        description: 'An error occurred while saving settings.',
+        type: 'error'
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleResetSettings = () => {
-    setAccountInfo({
-      fullName: 'John Doe',
-      email: 'john@example.com',
-      phone: '+1 (555) 123-4567',
-      location: 'San Francisco, CA',
-      bio: 'Experienced software developer passionate about creating innovative solutions.'
-    });
-    setSettings({
-      notifications: {
-        email: true,
-        push: true,
-        applicationUpdates: true,
-        deadlineReminders: true,
-        weeklyDigest: false,
-        marketingEmails: false
-      },
-      privacy: {
-        profileVisible: true,
-        shareAnalytics: false,
-        twoFactorAuth: false
-      },
-      appearance: {
-        theme: 'system' as 'light' | 'dark' | 'system',
-        compactMode: false,
-        animationsEnabled: true
-      }
-    });
-    setHasUnsavedChanges(false);
-    addToast({
-      title: 'Settings reset',
-      description: 'All settings have been restored to their default values.',
-      type: 'info'
-    });
+    if (profile && user) {
+      setAccountInfo({
+        fullName: profile.personalInfo.name || '',
+        email: user.email || '',
+        phone: profile.personalInfo.phone || '',
+        location: profile.personalInfo.location || '',
+        bio: profile.personalInfo.bio || ''
+      });
+      setHasUnsavedChanges(false);
+      addToast({
+        title: 'Changes discarded',
+        description: 'All unsaved changes have been discarded.',
+        type: 'info'
+      });
+    }
   };
 
   const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
-    updateSetting('appearance', 'theme', theme);
-    
-    // Apply theme immediately
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
-    } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
-    } else {
-      // System theme
-      localStorage.removeItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        document.documentElement.classList.add('dark');
-        setIsDark(true);
-      } else {
-        document.documentElement.classList.remove('dark');
-        setIsDark(false);
-      }
-    }
+    setSettings(prev => ({
+      ...prev,
+      appearance: {
+        ...prev.appearance,
+        theme,
+      },
+    }));
+    setTheme(theme);
   };
 
   const renderAccountSettings = () => (
     <motion.div variants={itemVariants} className="space-y-6">
-      <Card>
-        <CardHeader>
+      <Card className={surfaceCardClass}>
+        <CardHeader className="border-b border-borderMuted/70 pb-4">
           <CardTitle className="flex items-center">
             <User className="w-5 h-5 mr-2" />
             Account Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Full Name</label>
-              <Input 
-                placeholder="John Doe" 
-                value={accountInfo.fullName}
-                onChange={(e) => updateAccountInfo('fullName', e.target.value)}
-              />
+        <CardContent className="pt-4 space-y-6">
+          {profileLoading ? (
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
             </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Email Address</label>
-              <Input 
-                type="email" 
-                placeholder="john@example.com" 
-                value={accountInfo.email}
-                onChange={(e) => updateAccountInfo('email', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Phone Number</label>
-              <Input 
-                placeholder="+1 (555) 123-4567" 
-                value={accountInfo.phone}
-                onChange={(e) => updateAccountInfo('phone', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Location</label>
-              <Input 
-                placeholder="San Francisco, CA" 
-                value={accountInfo.location}
-                onChange={(e) => updateAccountInfo('location', e.target.value)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-2 block">Bio</label>
-            <textarea 
-              className="w-full p-3 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
-              rows={4}
-              placeholder="Tell us about yourself..."
-              value={accountInfo.bio}
-              onChange={(e) => updateAccountInfo('bio', e.target.value)}
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button>
-              <Save className="w-4 h-4 mr-2" />
-              Save Changes
-            </Button>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Full Name</label>
+                  <Input
+                    placeholder="Your full name"
+                    value={accountInfo.fullName}
+                    onChange={(e) => updateAccountInfo('fullName', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Email Address</label>
+                  <Input
+                    type="email"
+                    value={accountInfo.email}
+                    disabled
+                    className="opacity-60 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Email cannot be changed here</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Phone Number</label>
+                  <Input
+                    placeholder="+1 (555) 123-4567"
+                    value={accountInfo.phone}
+                    onChange={(e) => updateAccountInfo('phone', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Location</label>
+                  <Input
+                    placeholder="City, State/Country"
+                    value={accountInfo.location}
+                    onChange={(e) => updateAccountInfo('location', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Bio</label>
+                <textarea
+                  className="w-full p-3 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  rows={4}
+                  placeholder="Tell us about yourself..."
+                  value={accountInfo.bio}
+                  onChange={(e) => updateAccountInfo('bio', e.target.value)}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </motion.div>
@@ -282,14 +306,14 @@ export const Settings: React.FC = () => {
 
   const renderNotificationSettings = () => (
     <motion.div variants={itemVariants} className="space-y-6">
-      <Card>
-        <CardHeader>
+      <Card className={surfaceCardClass}>
+        <CardHeader className="border-b border-borderMuted/70 pb-4">
           <CardTitle className="flex items-center">
             <Bell className="w-5 h-5 mr-2" />
             Notification Preferences
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="pt-4 space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -351,79 +375,33 @@ export const Settings: React.FC = () => {
                   <p className="text-sm text-muted-foreground">Weekly summary of your activity</p>
                 </div>
               </div>
-              <Switch 
+              <Switch
                 checked={settings.notifications.weeklyDigest}
                 onCheckedChange={(checked) => updateSetting('notifications', 'weeklyDigest', checked)}
               />
             </div>
           </div>
+          <div className="p-3 bg-muted/30 rounded-lg">
+            <p className="text-xs text-muted-foreground">
+              Note: Notification preferences are saved locally and will take effect immediately.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
   );
 
-  const renderPrivacySettings = () => (
-    <motion.div variants={itemVariants} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Shield className="w-5 h-5 mr-2" />
-            Privacy & Security
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Eye className="w-4 h-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Profile Visibility</p>
-                  <p className="text-sm text-muted-foreground">Make your profile visible to recruiters</p>
-                </div>
-              </div>
-              <Switch 
-                checked={settings.privacy.profileVisible}
-                onCheckedChange={(checked) => updateSetting('privacy', 'profileVisible', checked)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Shield className="w-4 h-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                </div>
-              </div>
-              <Switch 
-                checked={settings.privacy.twoFactorAuth}
-                onCheckedChange={(checked) => updateSetting('privacy', 'twoFactorAuth', checked)}
-              />
-            </div>
-          </div>
-          <div className="p-4 bg-muted/30 rounded-lg">
-            <h3 className="font-medium mb-2">Change Password</h3>
-            <div className="space-y-3">
-              <Input type="password" placeholder="Current password" />
-              <Input type="password" placeholder="New password" />
-              <Input type="password" placeholder="Confirm new password" />
-              <Button variant="outline" size="sm">Update Password</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
 
   const renderAppearanceSettings = () => (
     <motion.div variants={itemVariants} className="space-y-6">
-      <Card>
-        <CardHeader>
+      <Card className={surfaceCardClass}>
+        <CardHeader className="border-b border-borderMuted/70 pb-4">
           <CardTitle className="flex items-center">
             <Palette className="w-5 h-5 mr-2" />
             Appearance
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="pt-4 space-y-6">
           <div>
             <h3 className="font-medium mb-4">Theme</h3>
             <div className="grid grid-cols-3 gap-3">
@@ -475,94 +453,6 @@ export const Settings: React.FC = () => {
     </motion.div>
   );
 
-  const renderDataSettings = () => (
-    <motion.div variants={itemVariants} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Archive className="w-5 h-5 mr-2" />
-            Data & Storage
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="p-4 border border-border rounded-lg">
-              <h3 className="font-medium mb-2">Export Data</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Download all your application data in CSV or JSON format
-              </p>
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    addToast({
-                      title: 'Export started',
-                      description: 'Your CSV export will be ready shortly.',
-                      type: 'info'
-                    });
-                  }}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    addToast({
-                      title: 'Export started',
-                      description: 'Your JSON export will be ready shortly.',
-                      type: 'info'
-                    });
-                  }}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export JSON
-                </Button>
-              </div>
-            </div>
-            <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-              <h3 className="font-medium mb-2 text-destructive">Danger Zone</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                These actions are irreversible. Please be careful.
-              </p>
-              <div className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    addToast({
-                      title: 'Clear data',
-                      description: 'This feature requires additional confirmation. Contact support for assistance.',
-                      type: 'warning'
-                    });
-                  }}
-                >
-                  <Archive className="w-4 h-4 mr-2" />
-                  Clear All Data
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => {
-                    addToast({
-                      title: 'Account deletion',
-                      description: 'This feature requires additional verification. Contact support to proceed.',
-                      type: 'error'
-                    });
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Account
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -570,12 +460,8 @@ export const Settings: React.FC = () => {
         return renderAccountSettings();
       case 'notifications':
         return renderNotificationSettings();
-      case 'privacy':
-        return renderPrivacySettings();
       case 'appearance':
         return renderAppearanceSettings();
-      case 'data':
-        return renderDataSettings();
       default:
         return renderAccountSettings();
     }
@@ -586,7 +472,7 @@ export const Settings: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-8"
+      className="space-y-8 max-w-6xl mx-auto"
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
@@ -603,7 +489,7 @@ export const Settings: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Settings Navigation */}
         <motion.div variants={itemVariants} className="lg:col-span-1">
-          <Card>
+          <Card className={surfaceCardClass}>
             <CardContent className="p-0">
               <nav className="space-y-1 p-4">
                 {settingsSections.map((section) => (
@@ -611,11 +497,12 @@ export const Settings: React.FC = () => {
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={cn(
-                      "w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg transition-colors",
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
                       activeSection === section.id
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted text-muted-foreground"
+                        ? "bg-primary-600 text-white shadow-level-1"
+                        : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
                     )}
+                    aria-pressed={activeSection === section.id}
                   >
                     {section.icon}
                     <span className="font-medium">{section.title}</span>
@@ -639,7 +526,7 @@ export const Settings: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="fixed bottom-6 right-6 z-50"
         >
-          <Card className="shadow-lg border-primary/20">
+          <Card className={cn(surfaceCardClass, "border-primary-300/50 shadow-level-1")}>
             <CardContent className="p-4">
               <div className="flex items-center space-x-3">
                 <p className="text-sm text-muted-foreground">You have unsaved changes</p>
@@ -651,13 +538,15 @@ export const Settings: React.FC = () => {
                   >
                     Reset
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={handleSaveSettings}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    disabled={saving}
+                    loading={saving}
+                    variant="primary"
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                    <Save className="h-4 w-4" />
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>

@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/Progress';
 import { cn } from '@/lib/utils';
 import { FILE_UPLOAD } from '@/lib/constants';
 
-interface UploadedFile {
+export interface UploadedFile {
   id: string;
   file: File;
   preview?: string;
