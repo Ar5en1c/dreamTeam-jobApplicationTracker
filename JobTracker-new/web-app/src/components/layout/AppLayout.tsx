@@ -42,7 +42,7 @@ export const AppLayout: React.FC = () => {
         <div className="absolute inset-0 opacity-35 [mask-image:radial-gradient(70%_65%_at_50%_45%,black,transparent)] bg-[linear-gradient(rgba(99,102,241,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.08)_1px,transparent_1px)] bg-[size:120px_120px]" />
       </div>
 
-      {/* Sidebar with floating design */}
+      {/* Sidebar */}
       <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}

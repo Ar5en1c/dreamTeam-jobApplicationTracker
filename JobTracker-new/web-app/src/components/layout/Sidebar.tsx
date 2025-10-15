@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,10 +9,12 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  PanelLeft,
+  PanelRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { APP_NAME } from "@/lib/constants";
 import { useAuth } from "@/contexts/AuthContext";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -36,8 +38,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const isDesktopViewport =
+    typeof window !== "undefined" && window.innerWidth >= 1024;
+  const showSidebarContent = isExpanded || isMobileMenuOpen;
+  const isCollapsedDesktop = !showSidebarContent && isDesktopViewport;
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,40 +54,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     navigate("/dashboard");
   };
 
-  const handleMouseEnter = () => {
-    if (!isMobileMenuOpen && window.innerWidth >= 1024) {
-      // Clear any existing timeout
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-      }
-      // Delay expansion by 200ms to match collapse behavior
-      hoverTimeoutRef.current = setTimeout(() => {
-        setIsExpanded(true);
-      }, 200);
-    }
+  const toggleSidebar = () => {
+    setIsExpanded(!isExpanded);
   };
-
-  const handleMouseLeave = () => {
-    if (!isMobileMenuOpen && window.innerWidth >= 1024) {
-      // Clear any existing timeout
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-      }
-      // Delay collapse by 200ms to prevent accidental collapses
-      hoverTimeoutRef.current = setTimeout(() => {
-        setIsExpanded(false);
-      }, 200);
-    }
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <>
@@ -108,227 +82,318 @@ export const Sidebar: React.FC<SidebarProps> = ({
           width: isMobileMenuOpen ? "268px" : (isExpanded ? "268px" : "80px")
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className={cn(
           "group/sidebar relative z-30 flex flex-col overflow-hidden overflow-x-hidden",
-          "bg-gradient-to-b from-surface-1/95 via-surface-1/80 to-surface-1/65",
-          "border-r border-borderMuted/45 backdrop-blur-2xl shadow-[0_32px_82px_-46px_rgba(15,23,42,0.62)]",
-          "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.22),transparent_72%)] before:opacity-80 before:content-[''] before:overflow-hidden",
-          "after:absolute after:inset-0 after:-z-20 after:bg-gradient-to-b after:from-primary-500/14 after:via-transparent after:to-transparent after:blur-[90px] after:overflow-hidden",
-          "fixed inset-y-0 left-0 -translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-          "lg:static lg:inset-auto lg:m-6 lg:h-[calc(100vh-3rem)] lg:translate-x-0 lg:rounded-3xl lg:border lg:border-borderMuted/55 lg:shadow-[0_45px_110px_-70px_rgba(15,23,42,0.55)]",
+          "bg-surface-1 backdrop-blur-xl",
+          "border-r border-borderMuted/45",
+          "shadow-xl",
+          "fixed inset-y-0 left-0 h-screen -translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+          "lg:static lg:translate-x-0",
           "sidebar-mobile-fix",
           isMobileMenuOpen && "translate-x-0"
         )}
-        style={{ overflowX: 'hidden' }}
+        style={{
+          overflowX: 'hidden',
+          backgroundColor: 'var(--surface-1)',
+          opacity: 1
+        }}
       >
 
-        {/* Logo Area */}
-        <button
-          onClick={handleLogoClick}
-          className="relative flex h-20 items-center px-4 w-full cursor-pointer hover:bg-surface-2/30 transition-colors group"
+        {/* Header Area with Logo and Toggle */}
+        <div
+          className="group/header relative flex h-20 items-center border-b border-borderMuted/35 px-2 transition-all duration-200"
         >
-          <div className="absolute inset-x-3 bottom-0 h-px bg-gradient-to-r from-transparent via-primary-500/25 to-transparent" />
-          <motion.div
-            className="flex h-full items-center overflow-hidden"
-            layout
-          >
-            <motion.div
-              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.05rem] bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 text-white shadow-[0_18px_40px_-18px_rgba(99,102,241,0.68)]"
-              whileHover={{ scale: 1.05, rotate: 3 }}
-              whileTap={{ scale: 0.96 }}
+          <div className="relative flex w-16 shrink-0 items-center justify-center">
+            <button
+              type="button"
+              onClick={handleLogoClick}
+              className="relative z-20 flex h-11 w-11 items-center justify-center rounded-[1.05rem] transition-transform duration-200 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0"
+              aria-label="Go to dashboard"
             >
-              <Sparkles className="relative z-10 h-5 w-5 text-white drop-shadow-[0_8px_18px_rgba(99,102,241,0.6)]" />
-              <span className="pointer-events-none absolute inset-0 rounded-[1.05rem] border border-white/30 opacity-70" />
-              <span className="pointer-events-none absolute -inset-4 rounded-[1.35rem] bg-primary-500/25 blur-3xl" />
-            </motion.div>
+              <motion.div
+                className="relative flex h-full w-full items-center justify-center rounded-[1.05rem] bg-gradient-to-br from-sky-100 via-sky-200 to-blue-300 text-blue-700 shadow-[0_14px_32px_-18px_rgba(15,23,42,0.45)] dark:from-sky-500 dark:via-blue-600 dark:to-indigo-700 dark:text-white"
+                whileHover={{ rotate: 3 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <Sparkles className="relative z-10 h-5 w-5 text-blue-700 drop-shadow-[0_6px_14px_rgba(15,23,42,0.28)] dark:text-white" />
+                <span className="pointer-events-none absolute inset-0 rounded-[1.05rem] border border-blue-200/80 dark:border-white/15" />
+                <span className="pointer-events-none absolute -inset-3 rounded-[1.35rem] bg-sky-300/30 blur-3xl dark:bg-sky-600/25" />
+              </motion.div>
+            </button>
+
             <AnimatePresence>
-              {(isExpanded || isMobileMenuOpen) && (
-                <motion.div
-                  key="brand"
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -12 }}
-                  transition={{ duration: 0.2 }}
-                  className="ml-3 flex flex-col"
+              {isCollapsedDesktop && (
+                <motion.button
+                  key="expand-sidebar"
+                  type="button"
+                  onClick={toggleSidebar}
+                  initial={{ scale: 0.95 }}
+                  animate={{ scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: "easeInOut" }}
+                  className={cn(
+                    "absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.05rem] border border-borderMuted/45 bg-surface-1/95 text-muted-foreground shadow-sm backdrop-blur-sm",
+                    "opacity-0 pointer-events-none transition-all duration-200",
+                    "group-hover/header:opacity-100 group-hover/header:pointer-events-auto",
+                    "focus-visible:opacity-100 focus-visible:pointer-events-auto",
+                    "hover:bg-surface-2/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60",
+                    "z-30"
+                  )}
+                  aria-label="Expand sidebar"
                 >
-                  <span className="mt-1 text-base font-semibold leading-tight text-foreground">
-                    {APP_NAME}
-                  </span>
-                </motion.div>
+                  <PanelRight className="h-5 w-5" />
+                </motion.button>
               )}
             </AnimatePresence>
-          </motion.div>
-        </button>
+          </div>
+
+          <AnimatePresence>
+            {showSidebarContent && (
+              <motion.button
+                key="collapse-sidebar"
+                type="button"
+                onClick={toggleSidebar}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-2/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+                aria-label="Collapse sidebar"
+              >
+                <PanelLeft className="h-5 w-5 text-muted-foreground" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-4 py-6">
-          {navigation.map((item) => {
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={({ isActive: navIsActive }) =>
-                  cn(
-                    "group relative flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition-all duration-200",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
-                    "before:absolute before:left-2 before:top-1/2 before:h-8 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-gradient-to-b before:from-primary-400 before:via-primary-500 before:to-primary-600 before:opacity-0 before:transition-opacity before:duration-300 before:content-['']",
-                    navIsActive
-                      ? "text-primary-50 before:opacity-100 bg-gradient-to-r from-primary-500/25 via-primary-500/10 to-transparent border border-primary-500/35 shadow-[0_26px_48px_-34px_rgba(99,102,241,0.7)]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-surface-2/60 hover:before:opacity-70"
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <motion.span
-                      className={cn(
-                        "relative z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-200",
-                        isActive
-                          ? "bg-gradient-to-br from-primary-500/25 via-primary-500/15 to-transparent text-primary-100"
-                          : "bg-surface-2/40 text-muted-foreground group-hover:text-primary-400"
+        <Tooltip.Provider delayDuration={200}>
+          <nav
+            className={cn(
+              "flex-1 space-y-2 overflow-y-auto overflow-x-hidden py-6 px-2"
+            )}
+          >
+            {navigation.map((item) => {
+              const navLink = (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive: navIsActive }) =>
+                    cn(
+                      "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
+                      navIsActive
+                        ? "text-foreground bg-surface-2/60"
+                        : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
+                      showSidebarContent && "pr-3"
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {/* Active indicator - vertical bar on left */}
+                      {isActive && showSidebarContent && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 bg-foreground rounded-r-full" />
                       )}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <item.icon className="relative z-10 h-5 w-5" />
-                      {isActive && (
-                        <span className="pointer-events-none absolute inset-0 rounded-xl border border-primary-400/40" />
-                      )}
-                    </motion.span>
 
-                    {/* Label with fade animation */}
-                    <AnimatePresence>
-                      {(isExpanded || isMobileMenuOpen) && (
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          transition={{ duration: 0.18 }}
-                          className={cn(
-                            "relative z-10 whitespace-nowrap",
-                            isActive
-                              ? "font-semibold text-foreground"
-                              : "text-current"
-                          )}
-                        >
-                          {item.name}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                      {/* Icon wrapper - absolute positioning when expanded for consistency */}
+                      <div className="flex w-16 shrink-0 items-center justify-center">
+                        <item.icon className={cn(
+                          "h-5 w-5 transition-colors duration-200",
+                          isActive ? "text-foreground" : "text-current"
+                        )} />
+                      </div>
 
-                    {/* Active indicator dot (collapsed mode) */}
-                    {isActive && !isExpanded && !isMobileMenuOpen && (
-                      <motion.span
-                        layoutId="sidebar-active-dot"
-                        className="absolute -right-1 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-primary-400 shadow-[0_0_12px_rgba(99,102,241,0.7)]"
-                        initial={false}
-                        transition={{
-                          type: "spring",
-                          stiffness: 250,
-                          damping: 20,
-                        }}
-                      />
-                    )}
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Bottom Navigation */}
-        <div className="space-y-2 border-t border-borderMuted/35 px-4 py-5 overflow-x-hidden">
-          {bottomNavigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "group relative flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition-all duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
-                  "before:absolute before:left-2 before:top-1/2 before:h-8 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-gradient-to-b before:from-primary-400 before:via-primary-500 before:to-primary-600 before:opacity-0 before:transition-opacity before:duration-300 before:content-['']",
-                  isActive
-                    ? "text-primary-50 before:opacity-100 bg-gradient-to-r from-primary-500/25 via-primary-500/10 to-transparent border border-primary-500/35 shadow-[0_26px_48px_-34px_rgba(99,102,241,0.7)]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-surface-2/60 hover:before:opacity-70"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <motion.span
-                    className={cn(
-                      "relative z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-200",
-                      isActive
-                        ? "bg-gradient-to-br from-primary-500/25 via-primary-500/15 to-transparent text-foreground"
-                        : "bg-surface-2/40 text-muted-foreground group-hover:text-primary-400"
-                    )}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <item.icon className="relative z-10 h-5 w-5" />
-                    {isActive && (
-                      <span className="pointer-events-none absolute inset-0 rounded-xl border border-primary-400/40" />
-                    )}
-                  </motion.span>
-                  <AnimatePresence>
-                    {(isExpanded || isMobileMenuOpen) && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.15 }}
-                        className={cn(
-                          "relative z-10 whitespace-nowrap",
-                          isActive
-                            ? "font-semibold text-foreground"
-                            : "text-current"
+                      {/* Label with slide animation */}
+                      <AnimatePresence mode="wait">
+                        {showSidebarContent && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: "auto" }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className={cn(
+                              "whitespace-nowrap overflow-hidden pl-2",
+                              isActive ? "font-medium text-foreground" : "text-current"
+                            )}
+                          >
+                            {item.name}
+                          </motion.span>
                         )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </NavLink>
+              );
+
+              // Wrap with tooltip when collapsed on desktop
+              if (isCollapsedDesktop) {
+                return (
+                  <Tooltip.Root key={item.name}>
+                    <Tooltip.Trigger asChild>
+                      {navLink}
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="right"
+                        sideOffset={12}
+                        className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
                       >
                         {item.name}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </>
-              )}
-            </NavLink>
-          ))}
+                        <Tooltip.Arrow className="fill-surface-1" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                );
+              }
 
-          {/* Sign Out Button with enhanced hover */}
-          <motion.button
-            onClick={handleSignOut}
+              return navLink;
+            })}
+          </nav>
+        </Tooltip.Provider>
+
+        {/* Bottom Navigation */}
+        <Tooltip.Provider delayDuration={200}>
+          <div
             className={cn(
-              "group relative flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-muted-foreground transition-all duration-200",
-              "hover:bg-error-500/10 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50"
+              "space-y-2 border-t border-borderMuted/35 py-5 overflow-x-hidden px-2"
             )}
-            whileHover={{ x: 2 }}
-            whileTap={{ scale: 0.98 }}
           >
-            <motion.span
-              className="relative z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-error-500/10 text-error-500 transition-colors duration-200 group-hover:bg-error-500/15"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <LogOut className="h-5 w-5" />
-            </motion.span>
-            <AnimatePresence>
-              {(isExpanded || isMobileMenuOpen) && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.15 }}
-                  className="whitespace-nowrap"
+            {bottomNavigation.map((item) => {
+              const navLink = (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
+                      isActive
+                        ? "text-foreground bg-surface-2/60"
+                        : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
+                      showSidebarContent && "pr-3"
+                    )
+                  }
                 >
-                  Sign Out
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </div>
+                  {({ isActive }) => (
+                    <>
+                      {/* Active indicator - vertical bar on left */}
+                      {isActive && showSidebarContent && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 bg-foreground rounded-r-full" />
+                      )}
+
+                      {/* Icon wrapper - absolute positioning when expanded for consistency */}
+                      <div className="flex w-16 shrink-0 items-center justify-center">
+                        <item.icon className={cn(
+                          "h-5 w-5 transition-colors duration-200",
+                          isActive ? "text-foreground" : "text-current"
+                        )} />
+                      </div>
+
+                      {/* Label with slide animation */}
+                      <AnimatePresence mode="wait">
+                        {showSidebarContent && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: "auto" }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className={cn(
+                              "whitespace-nowrap overflow-hidden pl-2",
+                              isActive ? "font-medium text-foreground" : "text-current"
+                            )}
+                          >
+                            {item.name}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </NavLink>
+              );
+
+              // Wrap with tooltip when collapsed on desktop
+              if (isCollapsedDesktop) {
+                return (
+                  <Tooltip.Root key={item.name}>
+                    <Tooltip.Trigger asChild>
+                      {navLink}
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="right"
+                        sideOffset={12}
+                        className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                      >
+                        {item.name}
+                        <Tooltip.Arrow className="fill-surface-1" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                );
+              }
+
+              return navLink;
+            })}
+
+            {/* Sign Out Button */}
+            {isCollapsedDesktop ? (
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50"
+                    aria-label="Sign out"
+                  >
+                    <div className="flex w-16 shrink-0 items-center justify-center">
+                      <LogOut className="h-5 w-5 transition-colors duration-200" />
+                    </div>
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="right"
+                    sideOffset={12}
+                    className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                  >
+                    Sign Out
+                    <Tooltip.Arrow className="fill-surface-1" />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className={cn(
+                  "group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50",
+                  showSidebarContent && "pr-3"
+                )}
+              >
+                <div className="flex w-16 shrink-0 items-center justify-center">
+                  <LogOut className="h-5 w-5 transition-colors duration-200" />
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {showSidebarContent && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="whitespace-nowrap overflow-hidden pl-2"
+                    >
+                      Sign Out
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            )}
+          </div>
+        </Tooltip.Provider>
       </motion.div>
     </>
   );
