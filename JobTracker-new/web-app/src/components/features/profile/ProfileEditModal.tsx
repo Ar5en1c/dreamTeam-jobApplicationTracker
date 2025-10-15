@@ -114,6 +114,23 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     }
   };
 
+  const modalFooter = (
+    <div className="flex justify-end gap-3">
+      <Button variant="outline" onClick={onClose} type="button" disabled={isSubmitting}>
+        Cancel
+      </Button>
+      <Button
+        onClick={handleSave}
+        variant="primary"
+        loading={isSubmitting}
+        disabled={isSubmitting}
+      >
+        <Save className="w-4 h-4 mr-2" />
+        Save Changes
+      </Button>
+    </div>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -121,8 +138,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       title="Edit Profile"
       description="Update your personal information and contact details"
       size="lg"
+      footer={modalFooter}
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Profile Picture Section */}
         <div className="flex items-center space-x-4">
           <Avatar
@@ -143,12 +161,12 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         </div>
 
         {/* Personal Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center">
-            <User className="w-5 h-5 mr-2" />
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center">
+            <User className="w-4 h-4 mr-2" />
             Personal Information
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Full Name</label>
@@ -194,9 +212,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         </div>
 
         {/* Websites */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold flex items-center">
-            <Globe className="w-5 h-5 mr-2" />
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold flex items-center">
+            <Globe className="w-4 h-4 mr-2" />
             Websites & Social Links
           </h3>
           
@@ -235,8 +253,8 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         </div>
 
         {/* Bio Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Professional Bio</h3>
+        <div className="space-y-3">
+          <h3 className="text-base font-semibold">Professional Bio</h3>
           <textarea
             className="w-full p-3 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
             rows={4}
@@ -244,22 +262,6 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             defaultValue="Experienced software engineer passionate about creating innovative solutions and building scalable applications. Strong background in full-stack development with expertise in modern web technologies."
           />
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end space-x-2 pt-6 border-t border-border mt-6">
-        <Button variant="outline" onClick={onClose} type="button" disabled={isSubmitting}>
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="primary"
-          loading={isSubmitting}
-          disabled={isSubmitting}
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save Changes
-        </Button>
       </div>
     </Modal>
   );

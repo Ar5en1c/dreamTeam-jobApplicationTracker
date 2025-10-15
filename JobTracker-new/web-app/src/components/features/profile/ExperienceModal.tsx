@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { X, Calendar, Building2, MapPin, Plus, Trash2 } from 'lucide-react';
+import { Calendar, Building2, MapPin, Plus, Trash2, X } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -154,33 +154,32 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
     }));
   };
 
-  if (!isOpen) return null;
+  const modalFooter = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        variant="primary"
+        loading={isSubmitting}
+        disabled={isSubmitting}
+        onClick={handleSubmit}
+      >
+        {mode === 'create' ? 'Add Experience' : 'Update Experience'}
+      </Button>
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="modal-background rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground">
-            {mode === 'create' ? 'Add Experience' : 'Edit Experience'}
-          </h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-            type="button"
-            disabled={isSubmitting}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={mode === 'create' ? 'Add Experience' : 'Edit Experience'}
+      size="lg"
+      footer={modalFooter}
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -363,23 +362,7 @@ export const ExperienceModal: React.FC<ExperienceModalProps> = ({
               ))}
             </div>
           </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {mode === 'create' ? 'Add Experience' : 'Update Experience'}
-            </Button>
-          </div>
         </form>
-      </motion.div>
-    </div>
+    </Modal>
   );
 };

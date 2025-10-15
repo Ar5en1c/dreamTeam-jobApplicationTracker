@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { X, Plus, Search, Star, Award } from 'lucide-react';
+import { Plus, Search, Star, Award, X } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -132,32 +132,26 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
     ));
   };
 
-  if (!isOpen) return null;
+  const modalFooter = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+        Cancel
+      </Button>
+      <Button type="submit" variant="primary" disabled={isSaving} loading={isSaving} onClick={handleSubmit}>
+        Save Skills
+      </Button>
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="modal-background rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
-      >
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground">Manage Skills</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8"
-            type="button"
-            disabled={isSaving}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[calc(90vh-80px)]">
-          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Manage Skills"
+      size="xl"
+      footer={modalFooter}
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
             {/* Add New Skill */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-foreground">Add New Skill</h3>
@@ -323,19 +317,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end space-x-3 p-6 border-t border-border">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={isSaving} loading={isSaving}>
-              Save Skills
-            </Button>
-          </div>
         </form>
-      </motion.div>
-    </div>
+    </Modal>
   );
 };

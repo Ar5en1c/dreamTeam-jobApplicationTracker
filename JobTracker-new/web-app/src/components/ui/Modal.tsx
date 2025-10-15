@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Button } from './Button';
@@ -10,6 +11,7 @@ interface ModalProps {
   title?: string;
   description?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
@@ -22,7 +24,7 @@ const sizeClasses = {
   md: 'max-w-lg mx-4',
   lg: 'max-w-2xl mx-4',
   xl: 'max-w-4xl mx-4',
-  full: 'max-w-full mx-2'
+  full: 'max-w-7xl mx-4'
 };
 
 export const Modal: React.FC<ModalProps> = ({
@@ -31,6 +33,7 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   description,
   children,
+  footer,
   size = 'md',
   showCloseButton = true,
   closeOnOverlayClick = true,
@@ -68,8 +71,8 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
-  return (
-    <AnimatePresence>
+  const modalContent = (
+    <AnimatePresence mode="wait">
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-auto">
           {/* Overlay */}
@@ -77,28 +80,37 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute inset-0 bg-black/70"
             onClick={handleOverlayClick}
           />
 
-          {/* Modal */}
+          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', duration: 0.3 }}
+            transition={{
+              duration: 0.2,
+              ease: "easeOut"
+            }}
+            style={{ backgroundColor: 'hsl(var(--background))' }}
             className={cn(
-              'relative w-full modal-background border border-border rounded-lg shadow-xl',
+              'relative z-50 w-full rounded-xl overflow-hidden',
+              'flex flex-col max-h-[85vh]',
+              'border border-border',
+              'shadow-xl',
               sizeClasses[size],
               className
             )}
           >
+
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
-                <div>
+              <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border shrink-0">
+                <div className="flex-1 min-w-0">
                   {title && (
-                    <h2 className="text-lg font-semibold text-foreground">
+                    <h2 className="text-lg sm:text-xl font-semibold text-foreground">
                       {title}
                     </h2>
                   )}
@@ -113,7 +125,7 @@ export const Modal: React.FC<ModalProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="h-8 w-8"
+                    className="h-9 w-9 ml-4 shrink-0"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -121,15 +133,27 @@ export const Modal: React.FC<ModalProps> = ({
               </div>
             )}
 
-            {/* Content */}
-            <div className="p-4 sm:p-6 max-h-[70vh] overflow-auto">
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 px-4 sm:px-6 py-4">
               {children}
             </div>
+
+            {/* Sticky Footer */}
+            {footer && (
+              <div
+                style={{ backgroundColor: 'hsl(var(--background))' }}
+                className="border-t border-border px-4 sm:px-6 py-4 shrink-0"
+              >
+                {footer}
+              </div>
+            )}
           </motion.div>
         </div>
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export interface ConfirmModalProps {
@@ -160,15 +184,22 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <div className="space-y-4">
-        <p className="text-muted-foreground">{message}</p>
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+      <div className="space-y-6">
+        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+          {message}
+        </p>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="rounded-xl"
+          >
             {cancelText}
           </Button>
-          <Button 
-            variant={variant === 'destructive' ? 'destructive' : 'default'}
+          <Button
+            variant={variant === 'destructive' ? 'destructive' : 'primary'}
             onClick={handleConfirm}
+            className="rounded-xl"
           >
             {confirmText}
           </Button>

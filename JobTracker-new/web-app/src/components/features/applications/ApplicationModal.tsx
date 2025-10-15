@@ -241,6 +241,18 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
     onClose();
   };
 
+  const modalFooter = (
+    <div className="flex justify-end gap-3">
+      <Button variant="outline" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button onClick={handleSave}>
+        <Save className="w-4 h-4 mr-2" />
+        {mode === "create" ? "Create Application" : "Save Changes"}
+      </Button>
+    </div>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -252,81 +264,86 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
           : "Update application details"
       }
       size="xl"
+      footer={modalFooter}
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Basic Information */}
-        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
-          <h3 className="font-semibold mb-4 flex items-center">
-            <Building2 className="w-4 h-4 mr-2" />
+        <div className={cn(
+          "relative overflow-hidden rounded-xl p-4",
+          "bg-card border border-border",
+          "shadow-sm"
+        )}>
+          {/* Top gradient accent */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+
+          <h3 className="font-semibold mb-4 flex items-center text-foreground">
+            <div className={cn(
+              "flex items-center justify-center w-8 h-8 rounded-lg mr-2.5",
+              "bg-primary-500/10 dark:bg-primary-500/20",
+              "border border-primary-500/20"
+            )}>
+              <Building2 className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            </div>
             Basic Information
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Job Title
-              </label>
-              <Input
-                placeholder="e.g. Senior Software Engineer"
-                value={formData.job.title}
-                onChange={(e) => updateFormData("job", "title", e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Company</label>
-              <Input
-                placeholder="e.g. Google"
-                value={formData.job.company}
-                onChange={(e) =>
-                  updateFormData("job", "company", e.target.value)
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Location</label>
-              <Input
-                placeholder="e.g. San Francisco, CA"
-                value={formData.job.location}
-                onChange={(e) =>
-                  updateFormData("job", "location", e.target.value)
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Industry</label>
-              <Input
-                placeholder="e.g. Technology"
-                value={formData.job.industry}
-                onChange={(e) =>
-                  updateFormData("job", "industry", e.target.value)
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Salary Range
-              </label>
-              <Input
-                placeholder="e.g. $120,000 - $180,000"
-                value={formData.job.salary}
-                onChange={(e) =>
-                  updateFormData("job", "salary", e.target.value)
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Job URL</label>
-              <Input
-                placeholder="https://company.com/careers/123"
-                value={formData.job.url}
-                onChange={(e) => updateFormData("job", "url", e.target.value)}
-              />
-            </div>
+            <Input
+              label="Job Title"
+              placeholder="e.g. Senior Software Engineer"
+              value={formData.job.title}
+              onChange={(e) => updateFormData("job", "title", e.target.value)}
+            />
+            <Input
+              label="Company"
+              placeholder="e.g. Google"
+              value={formData.job.company}
+              onChange={(e) =>
+                updateFormData("job", "company", e.target.value)
+              }
+            />
+            <Input
+              label="Location"
+              placeholder="e.g. San Francisco, CA"
+              value={formData.job.location}
+              onChange={(e) =>
+                updateFormData("job", "location", e.target.value)
+              }
+            />
+            <Input
+              label="Industry"
+              placeholder="e.g. Technology"
+              value={formData.job.industry}
+              onChange={(e) =>
+                updateFormData("job", "industry", e.target.value)
+              }
+            />
+            <Input
+              label="Salary Range"
+              placeholder="e.g. $120,000 - $180,000"
+              value={formData.job.salary}
+              onChange={(e) =>
+                updateFormData("job", "salary", e.target.value)
+              }
+            />
+            <Input
+              label="Job URL"
+              placeholder="https://company.com/careers/123"
+              value={formData.job.url}
+              onChange={(e) => updateFormData("job", "url", e.target.value)}
+            />
           </div>
         </div>
 
         {/* Job Details */}
-        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
-          <h3 className="font-semibold mb-4">Job Details</h3>
+        <div className={cn(
+          "relative overflow-hidden rounded-xl p-4",
+          "bg-card border border-border",
+          "shadow-sm"
+        )}>
+          {/* Top gradient accent */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+
+          <h3 className="font-semibold mb-4 text-foreground">Job Details</h3>
           <div className="space-y-4">
             <Textarea
               label="Description"
@@ -340,7 +357,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-foreground">
                   Work Arrangement
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -351,10 +368,11 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                         updateFormData("job", "workArrangement", option.value)
                       }
                       className={cn(
-                        "px-3 py-1 rounded-full text-sm transition-colors",
+                        "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                        "border",
                         formData.job.workArrangement === option.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                       )}
                     >
                       {option.label}
@@ -364,7 +382,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-foreground">
                   Company Size
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -375,10 +393,11 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                         updateFormData("job", "companySize", option.value)
                       }
                       className={cn(
-                        "px-3 py-1 rounded-full text-sm transition-colors",
+                        "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                        "border",
                         formData.job.companySize === option.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                       )}
                     >
                       {option.label}
@@ -390,7 +409,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
             {/* Requirements */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-foreground">
                 Requirements
               </label>
               <div className="flex gap-2 mb-2">
@@ -400,7 +419,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   onChange={(e) => setNewRequirement(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addRequirement()}
                 />
-                <Button onClick={addRequirement} size="sm">
+                <Button onClick={addRequirement} size="sm" className="shrink-0">
                   Add
                 </Button>
               </div>
@@ -409,7 +428,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-error-500/10 hover:text-error-500 transition-colors"
                     onClick={() => removeRequirement(req)}
                   >
                     {req} <X className="w-3 h-3 ml-1" />
@@ -420,7 +439,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
             {/* Benefits */}
             <div>
-              <label className="block text-sm font-medium mb-2">Benefits</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Benefits</label>
               <div className="flex gap-2 mb-2">
                 <Input
                   placeholder="Add benefit..."
@@ -428,7 +447,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   onChange={(e) => setNewBenefit(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addBenefit()}
                 />
-                <Button onClick={addBenefit} size="sm">
+                <Button onClick={addBenefit} size="sm" className="shrink-0">
                   Add
                 </Button>
               </div>
@@ -437,7 +456,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   <Badge
                     key={index}
                     variant="outline"
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-error-500/10 hover:text-error-500 transition-colors"
                     onClick={() => removeBenefit(benefit)}
                   >
                     {benefit} <X className="w-3 h-3 ml-1" />
@@ -449,21 +468,29 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
         </div>
 
         {/* Application Status & Notes */}
-        <div className="rounded-xl border border-borderMuted bg-surface-1 p-4 shadow-sm">
-          <h3 className="font-semibold mb-4">Application Status</h3>
+        <div className={cn(
+          "relative overflow-hidden rounded-xl p-4",
+          "bg-card border border-border",
+          "shadow-sm"
+        )}>
+          {/* Top gradient accent */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
+
+          <h3 className="font-semibold mb-4 text-foreground">Application Status</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Status</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Status</label>
               <div className="flex flex-wrap gap-2">
                 {statusOptions.map((status) => (
                   <button
                     key={status.value}
                     onClick={() => updateFormData("status", status.value)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-sm transition-colors",
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                      "border",
                       formData.status === status.value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                     )}
                   >
                     {status.label}
@@ -482,7 +509,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium mb-2">Tags</label>
+              <label className="block text-sm font-medium mb-2 text-foreground">Tags</label>
               <div className="flex gap-2 mb-2">
                 <Input
                   placeholder="Add tag..."
@@ -490,7 +517,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addTag()}
                 />
-                <Button onClick={addTag} size="sm">
+                <Button onClick={addTag} size="sm" className="shrink-0">
                   Add
                 </Button>
               </div>
@@ -499,7 +526,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-error-500/10 hover:text-error-500 transition-colors"
                     onClick={() => removeTag(tag)}
                   >
                     {tag} <X className="w-3 h-3 ml-1" />
@@ -509,17 +536,6 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end gap-2 border-t border-borderMuted pt-4 mt-6">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>
-          <Save className="w-4 h-4 mr-2" />
-          {mode === "create" ? "Create Application" : "Save Changes"}
-        </Button>
       </div>
     </Modal>
   );

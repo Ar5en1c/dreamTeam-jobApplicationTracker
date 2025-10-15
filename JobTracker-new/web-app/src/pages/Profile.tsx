@@ -403,7 +403,7 @@ export const Profile: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80"
                         onClick={handleEditProfile}
                       >
                         Add phone
@@ -418,7 +418,7 @@ export const Profile: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80"
                         onClick={handleEditProfile}
                       >
                         Add location
@@ -435,7 +435,7 @@ export const Profile: React.FC = () => {
                             href={website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200 truncate"
+                            className="text-sm font-medium text-primary hover:text-primary/80 truncate"
                           >
                             {website}
                           </a>
@@ -450,7 +450,7 @@ export const Profile: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                        className="h-8 px-3 text-sm font-medium text-primary hover:text-primary/80"
                         onClick={handleEditProfile}
                       >
                         Add website
@@ -477,7 +477,7 @@ export const Profile: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                  className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80"
                   onClick={handleAddExperience}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -583,7 +583,7 @@ export const Profile: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                  className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80"
                   onClick={handleOpenSkillsModal}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -688,7 +688,7 @@ export const Profile: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80 dark:text-sky-300 dark:hover:text-sky-200"
+                className="h-9 rounded-lg px-3 text-sm font-medium text-primary hover:text-primary/80"
                 onClick={handleAddEducation}
               >
                 <Plus className="w-4 h-4 mr-2" />
