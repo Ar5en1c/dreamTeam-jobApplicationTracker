@@ -227,8 +227,10 @@ export const Dashboard: React.FC = () => {
 
       {/* Recent Applications */}
       <motion.div variants={itemVariants}>
-        <Card variant="premium">
-          <CardHeader className="pb-4 border-b border-border/50">
+        <Card
+          className="border-borderMuted/35 bg-surface-1/95 shadow-level-1 backdrop-blur supports-[backdrop-filter]:bg-surface-1/85"
+        >
+          <CardHeader className="pb-4 border-b border-borderMuted/30">
             <CardTitle className="flex items-center justify-between">
               <span className="text-xl font-bold">Recent Applications</span>
               <Button
@@ -245,7 +247,7 @@ export const Dashboard: React.FC = () => {
               recentApplications.map((application) => (
                 <div
                   key={application.id}
-                  className="group flex cursor-pointer items-center gap-3 rounded-lg border border-borderMuted bg-surface-1 p-4 shadow-sm transition-colors duration-200 hover:border-primary-300/60 hover:bg-surface-2 sm:gap-4"
+                  className="group flex cursor-pointer items-center gap-3 rounded-xl border border-borderMuted/45 bg-surface-1 p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-300/60 hover:bg-surface-2/90 hover:shadow-level-1 sm:gap-4"
                   onClick={() => navigate('/applications')}
                 >
                   <Avatar
@@ -277,7 +279,7 @@ export const Dashboard: React.FC = () => {
               ))
             ) : (
               <div className="text-center py-12">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-primary-200/60 bg-surface-2 text-primary-600 dark:border-primary-500/30 dark:bg-surface-3 dark:text-primary-300">
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-primary-200/45 bg-surface-2 text-primary-600 dark:border-primary-500/30 dark:bg-surface-3 dark:text-primary-300">
                   <Building2 className="h-10 w-10" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-2">No applications yet</h3>

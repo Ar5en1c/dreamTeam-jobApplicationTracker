@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   LayoutDashboard,
   User,
@@ -26,6 +26,43 @@ const navigation = [
 const bottomNavigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
+
+const ActiveIndicator = () => (
+  <motion.div
+    layoutId="activeIndicator"
+    className={cn(
+      "pointer-events-none absolute inset-0 overflow-hidden rounded-[1.05rem]",
+      "backdrop-blur-[28px]",
+      "bg-[radial-gradient(120%_160%_at_18%_18%,rgba(255,255,255,0.98)_0%,rgba(255,255,255,0.85)_32%,rgba(219,234,254,0.7)_58%,rgba(125,211,252,0.52)_78%,rgba(56,189,248,0.34)_100%)]",
+      "dark:bg-[radial-gradient(120%_160%_at_22%_20%,rgba(255,255,255,0.24)_0%,rgba(148,197,255,0.18)_44%,rgba(59,130,246,0.14)_72%,rgba(15,23,42,0.72)_100%)]",
+      "ring-1 ring-sky-400/70 dark:ring-white/12",
+      "shadow-[0_24px_52px_-24px_rgba(14,116,144,0.55),0_8px_22px_-12px_rgba(14,116,144,0.35),inset_0_1px_0_rgba(255,255,255,0.9)]",
+      "dark:shadow-[0_22px_48px_-24px_rgba(2,6,23,0.78),0_2px_12px_-8px_rgba(8,47,73,0.45),inset_0_1px_0_rgba(255,255,255,0.32)]"
+    )}
+    transition={{ type: "spring", stiffness: 320, damping: 34 }}
+  >
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[radial-gradient(160%_160%_at_22%_18%,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.6)_46%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(160%_160%_at_20%_18%,rgba(255,255,255,0.32)_0%,rgba(255,255,255,0.14)_52%,rgba(255,255,255,0)_100%)] opacity-95"
+    />
+    <span
+      aria-hidden
+      className="pointer-events-none absolute left-3 right-3 top-1.5 h-[38%] rounded-full bg-white/95 dark:bg-white/25 blur-2xl opacity-85"
+    />
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-3 bottom-[9px] h-1/3 rounded-full bg-sky-200/70 dark:bg-primary-400/25 blur-3xl opacity-80"
+    />
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-y-3 left-[14px] w-px bg-white/75 dark:bg-white/25 opacity-95"
+    />
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-y-2 right-[18px] w-[40%] rounded-full bg-[radial-gradient(100%_160%_at_0%_50%,rgba(255,255,255,0.68)_0%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(100%_160%_at_0%_50%,rgba(255,255,255,0.28)_0%,rgba(255,255,255,0)_100%)] blur-xl opacity-80"
+    />
+  </motion.div>
+);
 
 interface SidebarProps {
   isMobileMenuOpen: boolean;
@@ -168,15 +205,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation */}
         <Tooltip.Provider delayDuration={200}>
-          <nav
-            className={cn(
-              "flex-1 space-y-2 overflow-y-auto overflow-x-hidden py-6 px-2"
-            )}
-          >
-            {navigation.map((item) => {
+          <LayoutGroup id="main-nav">
+            <nav
+              className={cn(
+                "flex-1 space-y-2 overflow-y-auto overflow-x-hidden py-6 px-2"
+              )}
+            >
+              {navigation.map((item) => {
               const navLink = (
                 <NavLink
-                  key={item.name}
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive: navIsActive }) =>
@@ -184,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
                       navIsActive
-                        ? "text-foreground bg-surface-2/60"
+                        ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
                       showSidebarContent && "pr-3"
                     )
@@ -192,16 +229,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {({ isActive }) => (
                     <>
-                      {/* Active indicator - vertical bar on left */}
-                      {isActive && showSidebarContent && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 bg-foreground rounded-r-full" />
-                      )}
+                      {/* Pill-shaped active indicator with layout animation */}
+                      {isActive && <ActiveIndicator />}
 
                       {/* Icon wrapper - absolute positioning when expanded for consistency */}
-                      <div className="flex w-16 shrink-0 items-center justify-center">
+                      <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
                         <item.icon className={cn(
                           "h-5 w-5 transition-colors duration-200",
-                          isActive ? "text-foreground" : "text-current"
+                          isActive ? "text-primary-600 dark:text-primary-400" : "text-current"
                         )} />
                       </div>
 
@@ -214,8 +249,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             exit={{ opacity: 0, width: 0 }}
                             transition={{ duration: 0.2, ease: "easeInOut" }}
                             className={cn(
-                              "whitespace-nowrap overflow-hidden pl-2",
-                              isActive ? "font-medium text-foreground" : "text-current"
+                              "relative z-10 whitespace-nowrap overflow-hidden pl-2",
+                              isActive ? "font-medium text-primary-700 dark:text-primary-300" : "text-current"
                             )}
                           >
                             {item.name}
@@ -227,13 +262,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </NavLink>
               );
 
-              // Wrap with tooltip when collapsed on desktop
-              if (isCollapsedDesktop) {
-                return (
-                  <Tooltip.Root key={item.name}>
-                    <Tooltip.Trigger asChild>
-                      {navLink}
-                    </Tooltip.Trigger>
+              return (
+                <Tooltip.Root
+                  key={item.name}
+                  delayDuration={isCollapsedDesktop ? 200 : 0}
+                  disableHoverableContent={!isCollapsedDesktop}
+                >
+                  <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
+                  {isCollapsedDesktop && (
                     <Tooltip.Portal>
                       <Tooltip.Content
                         side="right"
@@ -244,26 +280,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <Tooltip.Arrow className="fill-surface-1" />
                       </Tooltip.Content>
                     </Tooltip.Portal>
-                  </Tooltip.Root>
-                );
-              }
-
-              return navLink;
+                  )}
+                </Tooltip.Root>
+              );
             })}
-          </nav>
+            </nav>
+          </LayoutGroup>
         </Tooltip.Provider>
 
         {/* Bottom Navigation */}
         <Tooltip.Provider delayDuration={200}>
-          <div
-            className={cn(
-              "space-y-2 border-t border-borderMuted/35 py-5 overflow-x-hidden px-2"
-            )}
-          >
-            {bottomNavigation.map((item) => {
+          <LayoutGroup id="bottom-nav">
+            <div
+              className={cn(
+                "space-y-2 border-t border-borderMuted/35 py-5 overflow-x-hidden px-2"
+              )}
+            >
+              {bottomNavigation.map((item) => {
               const navLink = (
                 <NavLink
-                  key={item.name}
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
@@ -271,7 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
                       isActive
-                        ? "text-foreground bg-surface-2/60"
+                        ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
                       showSidebarContent && "pr-3"
                     )
@@ -279,16 +314,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {({ isActive }) => (
                     <>
-                      {/* Active indicator - vertical bar on left */}
-                      {isActive && showSidebarContent && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 bg-foreground rounded-r-full" />
-                      )}
+                      {/* Pill-shaped active indicator with layout animation */}
+                      {isActive && <ActiveIndicator />}
 
                       {/* Icon wrapper - absolute positioning when expanded for consistency */}
-                      <div className="flex w-16 shrink-0 items-center justify-center">
+                      <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
                         <item.icon className={cn(
                           "h-5 w-5 transition-colors duration-200",
-                          isActive ? "text-foreground" : "text-current"
+                          isActive ? "text-primary-600 dark:text-primary-400" : "text-current"
                         )} />
                       </div>
 
@@ -301,8 +334,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             exit={{ opacity: 0, width: 0 }}
                             transition={{ duration: 0.2, ease: "easeInOut" }}
                             className={cn(
-                              "whitespace-nowrap overflow-hidden pl-2",
-                              isActive ? "font-medium text-foreground" : "text-current"
+                              "relative z-10 whitespace-nowrap overflow-hidden pl-2",
+                              isActive ? "font-medium text-primary-700 dark:text-primary-300" : "text-current"
                             )}
                           >
                             {item.name}
@@ -314,13 +347,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </NavLink>
               );
 
-              // Wrap with tooltip when collapsed on desktop
-              if (isCollapsedDesktop) {
-                return (
-                  <Tooltip.Root key={item.name}>
-                    <Tooltip.Trigger asChild>
-                      {navLink}
-                    </Tooltip.Trigger>
+              return (
+                <Tooltip.Root
+                  key={item.name}
+                  delayDuration={isCollapsedDesktop ? 200 : 0}
+                  disableHoverableContent={!isCollapsedDesktop}
+                >
+                  <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
+                  {isCollapsedDesktop && (
                     <Tooltip.Portal>
                       <Tooltip.Content
                         side="right"
@@ -331,28 +365,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <Tooltip.Arrow className="fill-surface-1" />
                       </Tooltip.Content>
                     </Tooltip.Portal>
-                  </Tooltip.Root>
-                );
-              }
-
-              return navLink;
+                  )}
+                </Tooltip.Root>
+              );
             })}
 
             {/* Sign Out Button */}
-            {isCollapsedDesktop ? (
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50"
-                    aria-label="Sign out"
-                  >
-                    <div className="flex w-16 shrink-0 items-center justify-center">
-                      <LogOut className="h-5 w-5 transition-colors duration-200" />
-                    </div>
-                  </button>
-                </Tooltip.Trigger>
+            <Tooltip.Root
+              delayDuration={isCollapsedDesktop ? 200 : 0}
+              disableHoverableContent={!isCollapsedDesktop}
+            >
+              <Tooltip.Trigger asChild>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className={cn(
+                    "group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50",
+                    showSidebarContent && "pr-3"
+                  )}
+                  aria-label="Sign out"
+                >
+                  <div className="flex w-16 shrink-0 items-center justify-center">
+                    <LogOut className="h-5 w-5 transition-colors duration-200" />
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {showSidebarContent && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="whitespace-nowrap overflow-hidden pl-2"
+                      >
+                        Sign Out
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </Tooltip.Trigger>
+              {isCollapsedDesktop && (
                 <Tooltip.Portal>
                   <Tooltip.Content
                     side="right"
@@ -363,36 +415,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Tooltip.Arrow className="fill-surface-1" />
                   </Tooltip.Content>
                 </Tooltip.Portal>
-              </Tooltip.Root>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className={cn(
-                  "group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50",
-                  showSidebarContent && "pr-3"
-                )}
-              >
-                <div className="flex w-16 shrink-0 items-center justify-center">
-                  <LogOut className="h-5 w-5 transition-colors duration-200" />
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {showSidebarContent && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                      className="whitespace-nowrap overflow-hidden pl-2"
-                    >
-                      Sign Out
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            )}
-          </div>
+              )}
+            </Tooltip.Root>
+            </div>
+          </LayoutGroup>
         </Tooltip.Provider>
       </motion.div>
     </>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User, Save, Info, Shield } from 'lucide-react';
 import {
   Card,
@@ -29,6 +29,22 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 }
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 24, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { type: 'spring', stiffness: 210, damping: 26 }
+  },
+  exit: {
+    opacity: 0,
+    y: -18,
+    filter: 'blur(6px)',
+    transition: { duration: 0.18, ease: 'easeInOut' }
+  }
 };
 
 type SectionId = 'profile' | 'security';
@@ -280,7 +296,10 @@ export const Settings: React.FC = () => {
   const renderProfileSection = () => (
     <motion.form
       key="profile-settings"
-      variants={itemVariants}
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
       onSubmit={handleSubmit}
       className="space-y-6"
     >
@@ -379,7 +398,10 @@ export const Settings: React.FC = () => {
   const renderSecuritySection = () => (
     <motion.form
       key="security-settings"
-      variants={itemVariants}
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
       onSubmit={handlePasswordChange}
       className="space-y-6"
     >
@@ -545,7 +567,9 @@ export const Settings: React.FC = () => {
         </motion.nav>
 
         <div className="space-y-6 lg:col-span-3">
-          {renderActiveSection()}
+          <AnimatePresence mode="wait" initial={false}>
+            {renderActiveSection()}
+          </AnimatePresence>
         </div>
       </div>
     </motion.div>
