@@ -54,7 +54,7 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({
       <Card
         variant="surface"
         className={cn(
-          "border-borderMuted shadow-sm transition-colors",
+          "!border-borderMuted/45 shadow-sm transition-colors",
           isRecent && "ring-1 ring-info-300/50 dark:ring-info-500/30",
           className
         )}

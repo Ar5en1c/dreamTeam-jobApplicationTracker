@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Transition } from 'framer-motion';
@@ -28,12 +28,29 @@ const pageTransition: Transition = {
 
 export const AppLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+  );
   const location = useLocation();
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleSidebarToggle = (isExpanded: boolean) => {
+    setIsSidebarExpanded(isExpanded);
+  };
+
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-background text-foreground prevent-overflow">
+    <div className="relative min-h-screen bg-background text-foreground">
       {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.12),transparent_55%),radial-gradient(circle_at_bottom,_rgba(168,85,247,0.1),transparent_55%)]" />
         <div className="absolute -left-28 top-24 h-80 w-80 rounded-full bg-primary-500/25 blur-[140px]" />
         <div className="absolute -right-32 bottom-24 h-[420px] w-[420px] rounded-full bg-secondary-500/20 blur-[150px]" />
@@ -46,10 +63,19 @@ export const AppLayout: React.FC = () => {
       <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
+        onSidebarToggle={handleSidebarToggle}
       />
 
-      {/* Main Content Area */}
-      <div className="relative z-10 flex flex-1 min-w-0 flex-col lg:px-8 lg:py-8">
+      {/* Main Content Area - dynamically adjusted for sidebar width */}
+      <motion.div
+        initial={false}
+        animate={{
+          paddingLeft: isDesktop ? (isSidebarExpanded ? '268px' : '80px') : '0px',
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="relative flex min-h-screen flex-col"
+      >
+        <div className="relative z-10 flex flex-1 min-w-0 flex-col lg:px-8 lg:py-8">
         {/* Header with glass effect */}
         <Header onToggleMobileMenu={() => setIsMobileMenuOpen(true)} />
 
@@ -72,7 +98,8 @@ export const AppLayout: React.FC = () => {
             </AnimatePresence>
           </div>
         </main>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

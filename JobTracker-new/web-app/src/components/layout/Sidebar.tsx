@@ -67,11 +67,13 @@ const ActiveIndicator = () => (
 interface SidebarProps {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+  onSidebarToggle?: (isExpanded: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
+  onSidebarToggle,
 }) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +94,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const toggleSidebar = () => {
-    setIsExpanded(!isExpanded);
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    onSidebarToggle?.(newExpandedState);
   };
 
   return (
@@ -116,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <motion.div
         initial={false}
         animate={{
-          width: isMobileMenuOpen ? "268px" : (isExpanded ? "268px" : "80px")
+          width: isMobileMenuOpen ? "268px" : isExpanded ? "268px" : "80px",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
@@ -125,21 +129,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           "border-r border-borderMuted/45",
           "shadow-xl",
           "fixed inset-y-0 left-0 h-screen -translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-          "lg:static lg:translate-x-0",
+          "lg:translate-x-0",
           "sidebar-mobile-fix",
           isMobileMenuOpen && "translate-x-0"
         )}
         style={{
-          overflowX: 'hidden',
-          backgroundColor: 'var(--surface-1)',
-          opacity: 1
+          overflowX: "hidden",
+          backgroundColor: "var(--surface-1)",
+          opacity: 1,
         }}
       >
-
         {/* Header Area with Logo and Toggle */}
-        <div
-          className="group/header relative flex h-20 items-center border-b border-borderMuted/35 px-2 transition-all duration-200"
-        >
+        <div className="group/header relative flex h-20 items-center border-b border-borderMuted/35 px-2 transition-all duration-200">
           <div className="relative flex w-16 shrink-0 items-center justify-center">
             <button
               type="button"
@@ -160,45 +161,77 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <AnimatePresence>
               {isCollapsedDesktop && (
-                <motion.button
-                  key="expand-sidebar"
-                  type="button"
-                  onClick={toggleSidebar}
-                  initial={{ scale: 0.95 }}
-                  animate={{ scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.18, ease: "easeInOut" }}
-                  className={cn(
-                    "absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.05rem] border border-borderMuted/45 bg-surface-1/95 text-muted-foreground shadow-sm backdrop-blur-sm",
-                    "opacity-0 pointer-events-none transition-all duration-200",
-                    "group-hover/header:opacity-100 group-hover/header:pointer-events-auto",
-                    "focus-visible:opacity-100 focus-visible:pointer-events-auto",
-                    "hover:bg-surface-2/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60",
-                    "z-30"
-                  )}
-                  aria-label="Expand sidebar"
-                >
-                  <PanelRight className="h-5 w-5" />
-                </motion.button>
+                <Tooltip.Provider delayDuration={200}>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <motion.button
+                        key="expand-sidebar"
+                        type="button"
+                        onClick={toggleSidebar}
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.18, ease: "easeInOut" }}
+                        className={cn(
+                          "absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.05rem] border border-borderMuted/45 bg-surface-1/95 text-muted-foreground shadow-sm backdrop-blur-sm",
+                          "opacity-0 pointer-events-none transition-all duration-200",
+                          "group-hover/header:opacity-100 group-hover/header:pointer-events-auto",
+                          "focus-visible:opacity-100 focus-visible:pointer-events-auto",
+                          "hover:bg-surface-2/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60",
+                          "z-30"
+                        )}
+                        aria-label="Expand sidebar"
+                      >
+                        <PanelRight className="h-5 w-5" />
+                      </motion.button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="right"
+                        sideOffset={12}
+                        className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                      >
+                        Toggle sidebar
+                        <Tooltip.Arrow className="fill-surface-1" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
               )}
             </AnimatePresence>
           </div>
 
           <AnimatePresence>
             {showSidebarContent && (
-              <motion.button
-                key="collapse-sidebar"
-                type="button"
-                onClick={toggleSidebar}
-                initial={{ opacity: 0, x: 12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 12 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-2/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
-                aria-label="Collapse sidebar"
-              >
-                <PanelLeft className="h-5 w-5 text-muted-foreground" />
-              </motion.button>
+              <Tooltip.Provider delayDuration={200}>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <motion.button
+                      key="collapse-sidebar"
+                      type="button"
+                      onClick={toggleSidebar}
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 12 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-2/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40"
+                      aria-label="Collapse sidebar"
+                    >
+                      <PanelLeft className="h-5 w-5 text-muted-foreground" />
+                    </motion.button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="right"
+                      sideOffset={12}
+                      className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                    >
+                      Collapse sidebar
+                      <Tooltip.Arrow className="fill-surface-1" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              </Tooltip.Provider>
             )}
           </AnimatePresence>
         </div>
@@ -212,78 +245,84 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
             >
               {navigation.map((item) => {
-              const navLink = (
-                <NavLink
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive: navIsActive }) =>
-                    cn(
-                      "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
-                      navIsActive
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
-                      showSidebarContent && "pr-3"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {/* Pill-shaped active indicator with layout animation */}
-                      {isActive && <ActiveIndicator />}
+                const navLink = (
+                  <NavLink
+                    to={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive: navIsActive }) =>
+                      cn(
+                        "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
+                        navIsActive
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
+                        showSidebarContent && "pr-3"
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {/* Pill-shaped active indicator with layout animation */}
+                        {isActive && <ActiveIndicator />}
 
-                      {/* Icon wrapper - absolute positioning when expanded for consistency */}
-                      <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
-                        <item.icon className={cn(
-                          "h-5 w-5 transition-colors duration-200",
-                          isActive ? "text-primary-600 dark:text-primary-400" : "text-current"
-                        )} />
-                      </div>
-
-                      {/* Label with slide animation */}
-                      <AnimatePresence mode="wait">
-                        {showSidebarContent && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: "auto" }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                        {/* Icon wrapper - absolute positioning when expanded for consistency */}
+                        <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
+                          <item.icon
                             className={cn(
-                              "relative z-10 whitespace-nowrap overflow-hidden pl-2",
-                              isActive ? "font-medium text-primary-700 dark:text-primary-300" : "text-current"
+                              "h-5 w-5 transition-colors duration-200",
+                              isActive
+                                ? "text-primary-600 dark:text-primary-400"
+                                : "text-current"
                             )}
-                          >
-                            {item.name}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  )}
-                </NavLink>
-              );
+                          />
+                        </div>
 
-              return (
-                <Tooltip.Root
-                  key={item.name}
-                  delayDuration={isCollapsedDesktop ? 200 : 0}
-                  disableHoverableContent={!isCollapsedDesktop}
-                >
-                  <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
-                  {isCollapsedDesktop && (
-                    <Tooltip.Portal>
-                      <Tooltip.Content
-                        side="right"
-                        sideOffset={12}
-                        className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
-                      >
-                        {item.name}
-                        <Tooltip.Arrow className="fill-surface-1" />
-                      </Tooltip.Content>
-                    </Tooltip.Portal>
-                  )}
-                </Tooltip.Root>
-              );
-            })}
+                        {/* Label with slide animation */}
+                        <AnimatePresence mode="wait">
+                          {showSidebarContent && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: "auto" }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className={cn(
+                                "relative z-10 whitespace-nowrap overflow-hidden pl-2",
+                                isActive
+                                  ? "font-medium text-primary-700 dark:text-primary-300"
+                                  : "text-current"
+                              )}
+                            >
+                              {item.name}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    )}
+                  </NavLink>
+                );
+
+                return (
+                  <Tooltip.Root
+                    key={item.name}
+                    delayDuration={isCollapsedDesktop ? 200 : 0}
+                    disableHoverableContent={!isCollapsedDesktop}
+                  >
+                    <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
+                    {isCollapsedDesktop && (
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          side="right"
+                          sideOffset={12}
+                          className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                        >
+                          {item.name}
+                          <Tooltip.Arrow className="fill-surface-1" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    )}
+                  </Tooltip.Root>
+                );
+              })}
             </nav>
           </LayoutGroup>
         </Tooltip.Provider>
@@ -297,126 +336,132 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
             >
               {bottomNavigation.map((item) => {
-              const navLink = (
-                <NavLink
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
-                      isActive
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
-                      showSidebarContent && "pr-3"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {/* Pill-shaped active indicator with layout animation */}
-                      {isActive && <ActiveIndicator />}
-
-                      {/* Icon wrapper - absolute positioning when expanded for consistency */}
-                      <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
-                        <item.icon className={cn(
-                          "h-5 w-5 transition-colors duration-200",
-                          isActive ? "text-primary-600 dark:text-primary-400" : "text-current"
-                        )} />
-                      </div>
-
-                      {/* Label with slide animation */}
-                      <AnimatePresence mode="wait">
-                        {showSidebarContent && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: "auto" }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.2, ease: "easeInOut" }}
-                            className={cn(
-                              "relative z-10 whitespace-nowrap overflow-hidden pl-2",
-                              isActive ? "font-medium text-primary-700 dark:text-primary-300" : "text-current"
-                            )}
-                          >
-                            {item.name}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  )}
-                </NavLink>
-              );
-
-              return (
-                <Tooltip.Root
-                  key={item.name}
-                  delayDuration={isCollapsedDesktop ? 200 : 0}
-                  disableHoverableContent={!isCollapsedDesktop}
-                >
-                  <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
-                  {isCollapsedDesktop && (
-                    <Tooltip.Portal>
-                      <Tooltip.Content
-                        side="right"
-                        sideOffset={12}
-                        className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
-                      >
-                        {item.name}
-                        <Tooltip.Arrow className="fill-surface-1" />
-                      </Tooltip.Content>
-                    </Tooltip.Portal>
-                  )}
-                </Tooltip.Root>
-              );
-            })}
-
-            {/* Sign Out Button */}
-            <Tooltip.Root
-              delayDuration={isCollapsedDesktop ? 200 : 0}
-              disableHoverableContent={!isCollapsedDesktop}
-            >
-              <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className={cn(
-                    "group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50",
-                    showSidebarContent && "pr-3"
-                  )}
-                  aria-label="Sign out"
-                >
-                  <div className="flex w-16 shrink-0 items-center justify-center">
-                    <LogOut className="h-5 w-5 transition-colors duration-200" />
-                  </div>
-
-                  <AnimatePresence mode="wait">
-                    {showSidebarContent && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="whitespace-nowrap overflow-hidden pl-2"
-                      >
-                        Sign Out
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </Tooltip.Trigger>
-              {isCollapsedDesktop && (
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    side="right"
-                    sideOffset={12}
-                    className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                const navLink = (
+                  <NavLink
+                    to={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
+                        "group relative flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-0",
+                        isActive
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-surface-2/40",
+                        showSidebarContent && "pr-3"
+                      )
+                    }
                   >
-                    Sign Out
-                    <Tooltip.Arrow className="fill-surface-1" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              )}
-            </Tooltip.Root>
+                    {({ isActive }) => (
+                      <>
+                        {/* Pill-shaped active indicator with layout animation */}
+                        {isActive && <ActiveIndicator />}
+
+                        {/* Icon wrapper - absolute positioning when expanded for consistency */}
+                        <div className="relative flex w-16 shrink-0 items-center justify-center z-10">
+                          <item.icon
+                            className={cn(
+                              "h-5 w-5 transition-colors duration-200",
+                              isActive
+                                ? "text-primary-600 dark:text-primary-400"
+                                : "text-current"
+                            )}
+                          />
+                        </div>
+
+                        {/* Label with slide animation */}
+                        <AnimatePresence mode="wait">
+                          {showSidebarContent && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: "auto" }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className={cn(
+                                "relative z-10 whitespace-nowrap overflow-hidden pl-2",
+                                isActive
+                                  ? "font-medium text-primary-700 dark:text-primary-300"
+                                  : "text-current"
+                              )}
+                            >
+                              {item.name}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    )}
+                  </NavLink>
+                );
+
+                return (
+                  <Tooltip.Root
+                    key={item.name}
+                    delayDuration={isCollapsedDesktop ? 200 : 0}
+                    disableHoverableContent={!isCollapsedDesktop}
+                  >
+                    <Tooltip.Trigger asChild>{navLink}</Tooltip.Trigger>
+                    {isCollapsedDesktop && (
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          side="right"
+                          sideOffset={12}
+                          className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                        >
+                          {item.name}
+                          <Tooltip.Arrow className="fill-surface-1" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    )}
+                  </Tooltip.Root>
+                );
+              })}
+
+              {/* Sign Out Button */}
+              <Tooltip.Root
+                delayDuration={isCollapsedDesktop ? 200 : 0}
+                disableHoverableContent={!isCollapsedDesktop}
+              >
+                <Tooltip.Trigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className={cn(
+                      "group relative flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-2/40 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/50",
+                      showSidebarContent && "pr-3"
+                    )}
+                    aria-label="Sign out"
+                  >
+                    <div className="flex w-16 shrink-0 items-center justify-center">
+                      <LogOut className="h-5 w-5 transition-colors duration-200" />
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                      {showSidebarContent && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="whitespace-nowrap overflow-hidden pl-2"
+                        >
+                          Sign Out
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                </Tooltip.Trigger>
+                {isCollapsedDesktop && (
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="right"
+                      sideOffset={12}
+                      className="z-50 rounded-lg bg-surface-1 px-3 py-2 text-sm font-medium text-foreground shadow-lg border border-borderMuted/50 animate-in fade-in-0 zoom-in-95"
+                    >
+                      Sign Out
+                      <Tooltip.Arrow className="fill-surface-1" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                )}
+              </Tooltip.Root>
             </div>
           </LayoutGroup>
         </Tooltip.Provider>
