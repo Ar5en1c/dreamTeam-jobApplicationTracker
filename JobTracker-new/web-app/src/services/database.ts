@@ -1,5 +1,5 @@
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { supabase, type Tables } from '@/lib/supabase';
+import { supabase, type Tables, type TablesInsert, type TablesUpdate } from '@/lib/supabase';
 import type {
   JobApplication,
   UserProfile,
@@ -13,7 +13,14 @@ import type {
 } from '@/types';
 
 // Database service layer for job applications
+type JobApplicationsRow = Tables<'job_applications'>;
+type JobApplicationsInsert = TablesInsert<'job_applications'>;
+type JobApplicationsUpdate = TablesUpdate<'job_applications'>;
+
 export class DatabaseService {
+  private static readonly DEFAULT_APPLICATION_SOURCE = 'manual';
+  private static readonly DEFAULT_PRIORITY = 'medium';
+  private static readonly DEFAULT_IS_FAVORITE = false;
   
   // Job Applications
   static async getJobApplications(userId: string): Promise<JobApplication[]> {
@@ -63,7 +70,7 @@ export class DatabaseService {
       
       const { data, error } = await supabase
         .from('job_applications')
-        .update({ ...dbUpdates, updated_at: new Date().toISOString() })
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();
@@ -466,50 +473,60 @@ export class DatabaseService {
   }
 
   private static transformToDbJobApplication(userId: string, app: Partial<JobApplication>) {
-    return {
+    const dbApplication: JobApplicationsInsert = {
       user_id: userId,
-      job_title: app.job?.title || '',
-      company: app.job?.company || '',
-      location: app.job?.location || '',
-      description: app.job?.description || '',
-      requirements: app.job?.requirements || [],
-      salary: app.job?.salary || '',
-      url: app.job?.url || '',
-      portal: app.job?.portal || 'direct',
-      benefits: app.job?.benefits || null,
-      company_size: app.job?.companySize || null,
-      work_arrangement: app.job?.workArrangement || null,
-      industry: app.job?.industry || null,
-      status: app.status || 'applied',
-      notes: app.notes || '',
-      tags: app.tags || [],
-      applied_date: app.dates?.applied ? app.dates.applied.toISOString() : new Date().toISOString(),
-      // New fields
-      application_source: 'manual',
-      is_favorite: false,
-      priority: 'medium'
+      job_title: app.job?.title ?? '',
+      company: app.job?.company ?? '',
+      location: app.job?.location ?? '',
+      description: app.job?.description ?? '',
+      requirements: app.job?.requirements ?? [],
+      salary: app.job?.salary ?? '',
+      url: app.job?.url ?? '',
+      portal: app.job?.portal ?? 'direct',
+      benefits: app.job?.benefits ?? null,
+      company_size: app.job?.companySize ?? null,
+      work_arrangement: app.job?.workArrangement ?? null,
+      industry: app.job?.industry ?? null,
+      status: app.status ?? 'applied',
+      notes: app.notes ?? '',
+      tags: app.tags ?? [],
+      applied_date: (app.dates?.applied ?? new Date()).toISOString(),
+      application_source: DatabaseService.DEFAULT_APPLICATION_SOURCE,
+      is_favorite: DatabaseService.DEFAULT_IS_FAVORITE,
+      priority: DatabaseService.DEFAULT_PRIORITY
     };
+
+    return dbApplication;
   }
 
   private static transformToDbJobApplicationUpdates(app: Partial<JobApplication>) {
-    const updates: Record<string, unknown> = {};
-    
-    if (app.job?.title) updates.job_title = app.job.title;
-    if (app.job?.company) updates.company = app.job.company;
-    if (app.job?.location) updates.location = app.job.location;
-    if (app.job?.description) updates.description = app.job.description;
-    if (app.job?.requirements) updates.requirements = app.job.requirements;
-    if (app.job?.salary) updates.salary = app.job.salary;
-    if (app.job?.url) updates.url = app.job.url;
-    if (app.job?.portal) updates.portal = app.job.portal;
-    if (app.job?.benefits) updates.benefits = app.job.benefits;
-    if (app.job?.companySize) updates.company_size = app.job.companySize;
-    if (app.job?.workArrangement) updates.work_arrangement = app.job.workArrangement;
-    if (app.job?.industry) updates.industry = app.job.industry;
-    if (app.status) updates.status = app.status;
-    if (app.notes !== undefined) updates.notes = app.notes;
-    if (app.tags) updates.tags = app.tags;
-    
+    const updates: JobApplicationsUpdate = {};
+
+    if (app.job) {
+      if (app.job.title !== undefined) updates.job_title = app.job.title;
+      if (app.job.company !== undefined) updates.company = app.job.company;
+      if (app.job.location !== undefined) updates.location = app.job.location;
+      if (app.job.description !== undefined) updates.description = app.job.description;
+      if (app.job.requirements !== undefined) updates.requirements = app.job.requirements;
+      if (app.job.salary !== undefined) updates.salary = app.job.salary;
+      if (app.job.url !== undefined) updates.url = app.job.url;
+      if (app.job.portal !== undefined) updates.portal = app.job.portal;
+      if (app.job.benefits !== undefined) updates.benefits = app.job.benefits ?? null;
+      if (app.job.companySize !== undefined) updates.company_size = app.job.companySize ?? null;
+      if (app.job.workArrangement !== undefined) updates.work_arrangement = app.job.workArrangement ?? null;
+      if (app.job.industry !== undefined) updates.industry = app.job.industry ?? null;
+    }
+
+    if (app.dates?.applied !== undefined) {
+      updates.applied_date = app.dates.applied.toISOString();
+    }
+
+    if (app.status !== undefined) updates.status = app.status;
+    if (app.notes !== undefined) updates.notes = app.notes ?? null;
+    if (app.tags !== undefined) updates.tags = app.tags;
+
+    updates.updated_at = new Date().toISOString();
+
     return updates;
   }
 

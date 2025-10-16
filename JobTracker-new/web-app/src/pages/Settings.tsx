@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { User, Save, Info, Shield } from 'lucide-react';
 import {
   Card,
@@ -45,7 +45,7 @@ const sectionVariants = {
     filter: 'blur(6px)',
     transition: { duration: 0.18, ease: 'easeInOut' }
   }
-};
+} satisfies Variants;
 
 type SectionId = 'profile' | 'security';
 
