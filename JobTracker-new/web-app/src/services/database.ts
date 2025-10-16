@@ -99,14 +99,16 @@ export class DatabaseService {
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
-        if (profileError.code === 'PGRST116') {
-          // No profile found, return null
-          return null;
-        }
+        console.error('Error fetching user profile:', profileError);
         throw profileError;
+      }
+
+      if (!profile) {
+        // No profile found, return null
+        return null;
       }
 
       // Get related data
@@ -149,16 +151,19 @@ export class DatabaseService {
 
   static async createUserProfile(userId: string, profile: UserProfile): Promise<UserProfile | null> {
     try {
-      // Create user profile record
+      // Use upsert to handle potential conflicts with unique constraint
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .insert({
+        .upsert({
           user_id: userId,
           name: profile.personalInfo.name,
           email: profile.personalInfo.email,
           phone: profile.personalInfo.phone,
           location: profile.personalInfo.location,
           websites: profile.personalInfo.websites
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         });
 
       if (profileError) throw profileError;
@@ -174,18 +179,23 @@ export class DatabaseService {
     try {
       // Update basic profile info
       if (updates.personalInfo) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .update({
-            name: updates.personalInfo.name,
-            email: updates.personalInfo.email,
-            phone: updates.personalInfo.phone,
-            location: updates.personalInfo.location,
-            websites: updates.personalInfo.websites
-          })
-          .eq('user_id', userId);
+        const updateData: Record<string, unknown> = {};
 
-        if (profileError) throw profileError;
+        // Only include fields that are being updated
+        if (updates.personalInfo.name !== undefined) updateData.name = updates.personalInfo.name;
+        if (updates.personalInfo.phone !== undefined) updateData.phone = updates.personalInfo.phone;
+        if (updates.personalInfo.location !== undefined) updateData.location = updates.personalInfo.location;
+        if (updates.personalInfo.websites !== undefined) updateData.websites = updates.personalInfo.websites;
+        // Note: email is NOT included - it's managed through auth.users table
+
+        if (Object.keys(updateData).length > 0) {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .update(updateData)
+            .eq('user_id', userId);
+
+          if (profileError) throw profileError;
+        }
       }
 
       // Return updated profile
@@ -442,8 +452,8 @@ export class DatabaseService {
         coverLetter: undefined,
         others: []
       },
-      notes: dbApp.notes,
-      tags: dbApp.tags,
+      notes: dbApp.notes || '',
+      tags: dbApp.tags || [],
       aiInsights: {
         matchScore: 0,
         skillGaps: [],
@@ -457,7 +467,7 @@ export class DatabaseService {
 
   private static transformToDbJobApplication(userId: string, app: Partial<JobApplication>) {
     return {
-      user_id: userId, // Use the authenticated user's ID
+      user_id: userId,
       job_title: app.job?.title || '',
       company: app.job?.company || '',
       location: app.job?.location || '',
@@ -473,7 +483,11 @@ export class DatabaseService {
       status: app.status || 'applied',
       notes: app.notes || '',
       tags: app.tags || [],
-      applied_date: app.dates?.applied ? app.dates.applied.toISOString() : new Date().toISOString()
+      applied_date: app.dates?.applied ? app.dates.applied.toISOString() : new Date().toISOString(),
+      // New fields
+      application_source: 'manual',
+      is_favorite: false,
+      priority: 'medium'
     };
   }
 
@@ -540,7 +554,7 @@ export class DatabaseService {
       title: dbExperience.title,
       startDate: new Date(dbExperience.start_date),
       endDate: dbExperience.end_date ? new Date(dbExperience.end_date) : undefined,
-      current: dbExperience.current,
+      current: dbExperience.current ?? false,
       description: dbExperience.description,
       skills: dbExperience.skills,
       achievements: dbExperience.achievements ?? undefined,
