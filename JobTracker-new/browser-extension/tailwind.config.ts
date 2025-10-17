@@ -1,11 +1,11 @@
+import type { Config } from 'tailwindcss';
 import preset from '../packages/design-system/tailwind-preset.js';
 
-/** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
   content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
+    'src/**/*.{ts,tsx}',
+    'index.html',
     '../packages/ui/src/**/*.{ts,tsx}',
     '../packages/design-system/src/**/*.{ts,tsx}'
   ],
@@ -27,8 +27,7 @@ export default {
     'border-[var(--border-muted)]',
     'hover:border-[var(--border-contrast)]',
     'focus-visible:ring-[var(--border-contrast)]',
-    'hover:bg-[color-mix(in srgb,var(--color-primary-100)_12%,transparent)]',
     'hover:bg-[color-mix(in srgb,var(--color-primary-100)_12%,transparent)]'
   ],
-  presets: [preset],
-};
+  presets: [preset]
+} satisfies Config;

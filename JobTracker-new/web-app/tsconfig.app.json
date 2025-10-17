@@ -18,7 +18,17 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@jobtracker/design-system": ["../packages/design-system/src/index.ts"],
+      "@jobtracker/ui": ["../packages/ui/src/index.ts"],
+      "@jobtracker/ui/*": ["../packages/ui/src/*"],
+      "react": ["./node_modules/@types/react/index.d.ts"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime.d.ts"],
+      "react-dom": ["./node_modules/@types/react-dom/index.d.ts"],
+      "react-dom/client": ["./node_modules/@types/react-dom/client.d.ts"],
+      "class-variance-authority": ["./node_modules/class-variance-authority/dist/index.d.ts"],
+      "clsx": ["./node_modules/clsx/clsx.d.ts"],
+      "tailwind-merge": ["./node_modules/tailwind-merge/dist/types.d.ts"]
     },
 
     /* Linting */
@@ -29,5 +39,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "../packages/**/*.ts", "../packages/**/*.tsx"]
 }

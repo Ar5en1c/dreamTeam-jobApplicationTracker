@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { useJobApplications } from '@/hooks/useJobApplications';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn, dateUtils } from '@/lib/utils';
 
@@ -36,6 +37,15 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { applications, loading, error } = useJobApplications();
+  const { profile } = useUserProfile();
+
+  const displayName = useMemo(() => {
+    const profileName = profile?.personalInfo.name?.trim();
+    if (profileName) return profileName;
+    const metadataName = user?.user_metadata?.full_name?.trim();
+    if (metadataName) return metadataName;
+    return user?.email?.split('@')[0] || 'there';
+  }, [profile?.personalInfo.name, user?.user_metadata?.full_name, user?.email]);
 
   const stats = useMemo(() => {
     if (!applications.length) {
@@ -110,7 +120,7 @@ export const Dashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Welcome back, {user?.email?.split('@')[0] || 'there'}! 👋
+          Welcome back, {displayName}! 👋
         </h1>
         <div className="text-center py-12 bg-card rounded-lg border border-border">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
@@ -141,7 +151,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
             <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-              Welcome back, {user?.email?.split('@')[0] || 'there'}! 👋
+              Welcome back, {displayName}! 👋
             </h1>
             <p className="mt-1 text-muted-foreground">
               Here's what's happening with your job search

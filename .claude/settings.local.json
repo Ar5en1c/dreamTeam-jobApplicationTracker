@@ -24,7 +24,19 @@
       "Bash(export:*)",
       "mcp__ide__getDiagnostics",
       "Bash(grep:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__execute_sql",
+      "Bash(brew install:*)",
+      "Bash(supabase init:*)",
+      "Bash(supabase link:*)",
+      "Bash(supabase login:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__generate_typescript_types",
+      "Bash(npx tsc:*)",
+      "WebSearch"
     ],
     "deny": []
   }

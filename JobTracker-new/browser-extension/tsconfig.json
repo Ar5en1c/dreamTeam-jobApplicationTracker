@@ -1,0 +1,24 @@
+{
+  "extends": "../web-app/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist/tsc",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@jobtracker/design-system": ["../packages/design-system/src/index.ts"],
+      "@jobtracker/ui": ["../packages/ui/src/index.ts"],
+      "@jobtracker/ui/*": ["../packages/ui/src/*"],
+      "@jobtracker/types": ["../web-app/src/types/index.ts"],
+      "@jobtracker/database": ["../web-app/src/types/database.ts"],
+      "@shared/*": ["./src/shared/*"]
+    }
+  },
+  "include": [
+    "src",
+    "../packages/**/*.ts",
+    "../packages/**/*.tsx",
+    "../web-app/src/types/**/*.ts"
+  ],
+  "references": []
+}
